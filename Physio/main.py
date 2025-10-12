@@ -1,14 +1,11 @@
 import argparse
 from src.pose_runner import PoseRunner
-from src.evaluators.cat_cow import CatCowEvaluator
 from src.evaluators.cobra import CobraEvaluator
 from src.evaluators.warrior2 import Warrior2Evaluator
 from src.evaluators.tree import TreeEvaluator   # <-- add this
 
 def make_evaluator(name: str):
     n = name.lower()
-    if n in ["catcow", "cat-cow", "cat_cow"]:
-        return CatCowEvaluator()
     if n == "cobra":
         return CobraEvaluator()
     if n in ["warrior", "warrior2", "warrior_ii", "warrior-ii"]:
