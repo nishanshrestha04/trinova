@@ -43,6 +43,15 @@ dependencies:
   
   # State management
   provider: ^6.1.1
+  
+  # Camera for pose detection
+  camera: ^0.11.0+2
+  
+  # Image picker
+  image_picker: ^1.1.2
+  
+  # Permission handler
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

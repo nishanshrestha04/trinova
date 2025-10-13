@@ -126,3 +126,5 @@ lib/generated_plugin_registrant.dart
 Thumbs.db
 
 env/
+
+__pycache__/
