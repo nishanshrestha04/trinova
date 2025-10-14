@@ -1,4 +1,4 @@
-#!/home/nishan/development/projects/yogai/env/bin/python3
+#!/home/nishanshrestha/Documents/YogAI/trinova/env/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

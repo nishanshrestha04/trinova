@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../home_page.dart';
+import 'login_page.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -47,10 +47,10 @@ class _SignupPageState extends State<SignupPage> {
 
     if (mounted) {
       if (result['success']) {
-        // Navigate to home page
+        // Navigate to login page
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          MaterialPageRoute(builder: (context) => const LoginPage()),
         );
       } else {
         // Show error message
