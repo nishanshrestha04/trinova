@@ -263,3 +263,105 @@ def get_pose_tips(request, pose_name):
         'pose': pose_name,
         'tips': tips_data[pose_name]
     }, status=status.HTTP_200_OK)
+
+
+# ============================================
+# GESTURE DETECTION ENDPOINTS
+# ============================================
+
+from .gesture_detector import get_gesture_recognizer, start_camera_gesture_detection, stop_camera_gesture_detection
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def gesture_status(request):
+    """
+    Get current gesture detection status
+    Returns: { "gesture": "Thumbs Up", "action": "resume", "timestamp": 123456 }
+    """
+    recognizer = get_gesture_recognizer()
+    return Response(recognizer.get_status(), status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def detect_gesture_from_image(request):
+    """
+    Detect gesture from uploaded image
+    Expects: { "image": "base64_encoded_image" }
+    Returns: { "gesture": "Thumbs Up", "action": "resume" }
+    """
+    try:
+        data = request.data
+        image_data = data.get('image')
+        
+        if not image_data:
+            return Response({
+                'error': 'Image data is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Decode base64 image
+        try:
+            if ',' in image_data:
+                image_data = image_data.split(',')[1]
+            
+            img_bytes = base64.b64decode(image_data)
+            nparr = np.frombuffer(img_bytes, np.uint8)
+            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            
+            if frame is None:
+                return Response({
+                    'error': 'Invalid image data'
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            return Response({
+                'error': f'Failed to decode image: {str(e)}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Detect gesture
+        recognizer = get_gesture_recognizer()
+        gesture, action = recognizer.detect_gesture(frame)
+        
+        return Response({
+            'success': True,
+            'gesture': gesture,
+            'action': action
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def start_camera_detection(request):
+    """Start continuous camera-based gesture detection"""
+    try:
+        start_camera_gesture_detection()
+        return Response({
+            'success': True,
+            'message': 'Camera gesture detection started'
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def stop_camera_detection(request):
+    """Stop continuous camera-based gesture detection"""
+    try:
+        stop_camera_gesture_detection()
+        return Response({
+            'success': True,
+            'message': 'Camera gesture detection stopped'
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

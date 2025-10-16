@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/pose_service.dart';
+import '../services/yoga_gesture_detector.dart'; // Changed to yoga gesture detector
 
 class PoseCameraPage extends StatefulWidget {
   final String poseName;
@@ -30,6 +31,11 @@ class _PoseCameraPageState extends State<PoseCameraPage> {
   final ImagePicker _picker = ImagePicker();
   Timer? _analysisTimer;
   DateTime? _lastAnalysisTime;
+
+  // Yoga gesture control via server
+  final YogaGestureDetector _gestureDetector = YogaGestureDetector();
+  String _lastGesture = '';
+  StreamSubscription? _gestureSubscription;
 
   @override
   void initState() {
@@ -62,6 +68,9 @@ class _PoseCameraPageState extends State<PoseCameraPage> {
 
       await _cameraController!.initialize();
 
+      // Start gesture detection from camera stream
+      _startGestureDetection();
+
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -73,6 +82,73 @@ class _PoseCameraPageState extends State<PoseCameraPage> {
         _isLoading = false;
       });
     }
+  }
+
+  void _startGestureDetection() async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      print('⚠️ Camera not ready for gesture detection');
+      return;
+    }
+
+    // Check if gesture backend is available
+    final isAvailable = await _gestureDetector.isServerAvailable();
+    if (!isAvailable) {
+      print('⚠️ Yoga gesture backend not available');
+      print('💡 Make sure backend is running: ./start_backend.sh');
+      print('💡 Backend URL: ${_gestureDetector.serverUrl}');
+      return;
+    }
+
+    print('✅ Yoga gesture backend connected at ${_gestureDetector.serverUrl}!');
+    print('📸 Sending camera frames to backend for gesture detection...');
+
+    // Listen to gesture stream (now sending camera frames)
+    _gestureSubscription = _gestureDetector
+        .startGestureDetection(_cameraController!)
+        .listen(
+          (gesture) {
+            if (gesture != null && mounted) {
+              setState(() {
+                _lastGesture = gesture == 'start'
+                    ? '👍 Thumbs Up'
+                    : gesture == 'stop'
+                    ? '✋ Open Palm'
+                    : '👉 Point';
+              });
+
+              _handleGesture(gesture);
+            }
+          },
+          onError: (error) {
+            print('Gesture detection error: $error');
+          },
+        );
+  }
+
+  void _handleGesture(String gesture) {
+    print('🎮 Handling gesture: $gesture (isLiveTracking: $_isLiveTracking)');
+
+    if (gesture == 'start' && !_isLiveTracking) {
+      _startLiveTracking();
+      _showGestureFeedback('▶️ TRACKING STARTED by gesture!');
+    } else if (gesture == 'stop' && _isLiveTracking) {
+      _stopLiveTracking();
+      _showGestureFeedback('⏸️ TRACKING STOPPED by gesture!');
+    }
+  }
+
+  void _showGestureFeedback(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        duration: const Duration(seconds: 2),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   void _startLiveTracking() {
@@ -124,6 +200,7 @@ class _PoseCameraPageState extends State<PoseCameraPage> {
     });
 
     try {
+      // Take picture for pose analysis
       final image = await _cameraController!.takePicture();
       final bytes = await image.readAsBytes();
 
@@ -286,6 +363,10 @@ class _PoseCameraPageState extends State<PoseCameraPage> {
     _analysisTimer?.cancel();
     _analysisTimer = null;
 
+    // Stop gesture detection
+    _gestureSubscription?.cancel();
+    _gestureDetector.dispose();
+
     // Dispose camera controller
     _cameraController?.dispose();
     super.dispose();
@@ -420,6 +501,63 @@ class _PoseCameraPageState extends State<PoseCameraPage> {
                               fontSize: 12,
                             ),
                             textAlign: TextAlign.center,
+                          ),
+                          // Gesture control indicator
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.greenAccent,
+                                width: 1,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.pan_tool,
+                                      color: Colors.greenAccent,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Hand Gesture Control',
+                                      style: const TextStyle(
+                                        color: Colors.greenAccent,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (_lastGesture.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Last: $_lastGesture',
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 4),
+                                Text(
+                                  '👍 = START  •  ✋ = STOP',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

@@ -1,18 +1,39 @@
 # YogAI 🧘‍♀️
 
-AI-powered yoga pose detection app with real-time feedback. Practice yoga poses and get instant corrections using advanced computer vision technology.
+AI-powered yoga pose detection app with real-time feedback and hands-free gesture control. Practice yoga poses and get instant corrections using advanced computer vision technology.
 
 ![YogAI](https://img.shields.io/badge/Flutter-3.9.0-blue) ![Django](https://img.shields.io/badge/Django-5.2.6-green) ![Python](https://img.shields.io/badge/Python-3.10-yellow)
 
 ## ✨ Features
 
 - 🎯 **AI-Powered Pose Detection** - Real-time analysis using MediaPipe
-- 📱 **Cross-Platform** - Works on Android, iOS, and Web
+- � **Hand Gesture Control** - Control live tracking hands-free with gestures
+- �📱 **Cross-Platform** - Works on Android, iOS, and Web
 - 🧘 **3 Yoga Poses** - Tree, Cobra, and Warrior II
 - 📊 **Instant Feedback** - Get scored on pose accuracy (0-100%)
 - 💡 **Smart Tips** - Personalized corrections and suggestions
 - 📸 **Camera & Gallery** - Analyze live or from photos
 - 👤 **User Authentication** - Secure login and profile management
+
+## 🆕 Hand Gesture Control
+
+Control your yoga practice hands-free! The gesture control feature lets you:
+
+- **✋ Open Palm** → Pause live tracking
+- **👍 Thumbs Up** → Resume/Play live tracking  
+- **👉 Point** → Next exercise (coming soon)
+
+See **[GESTURE_CONTROL_GUIDE.md](GESTURE_CONTROL_GUIDE.md)** for detailed setup instructions.
+
+### Quick Gesture Setup
+
+```bash
+# Start the gesture server
+./start_gesture_server.sh
+
+# Then run the Flutter app
+flutter run
+```
 
 ## 🚀 Quick Start
 

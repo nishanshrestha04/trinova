@@ -139,7 +139,7 @@ class _HomeTab extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 user != null
-                    ? '${user.firstName.isNotEmpty ? user.firstName : user.username}'
+                    ? user.firstName.isNotEmpty ? user.firstName : user.username
                     : 'Yogi',
                 style: TextStyle(fontSize: 20, color: Colors.grey.shade600),
               ),
