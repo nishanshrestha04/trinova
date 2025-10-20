@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
+import 'package:http_parser/http_parser.dart';
 
 class AuthService {
   static const String baseUrl = 'http://192.168.18.6:8000/api/auth';
@@ -204,6 +206,68 @@ class AuthService {
         'success': false,
         'message': 'Network error: Please check your internet connection',
       };
+    }
+  }
+
+  // Update user profile
+  Future<Map<String, dynamic>> updateProfile({
+    required String firstName,
+    required String lastName,
+    required String username,
+    File? profilePicture,
+  }) async {
+    try {
+      final accessToken = await getAccessToken();
+
+      if (accessToken == null) {
+        return {'success': false, 'message': 'No access token found'};
+      }
+
+      var request = http.MultipartRequest(
+        'PUT',
+        Uri.parse('$baseUrl/profile/update/'),
+      );
+
+      // Add headers
+      request.headers['Authorization'] = 'Bearer $accessToken';
+
+      // Add text fields
+      request.fields['first_name'] = firstName;
+      request.fields['last_name'] = lastName;
+      request.fields['username'] = username;
+
+      // Add profile picture if provided
+      if (profilePicture != null) {
+        var pic = await http.MultipartFile.fromPath(
+          'profile_picture',
+          profilePicture.path,
+          contentType: MediaType('image', 'jpeg'),
+        );
+        request.files.add(pic);
+      }
+
+      // Send request
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        final user = User.fromJson(data['user']);
+        await _storeUserData(user);
+
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Profile updated successfully',
+          'user': user,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': data['error'] ?? 'Failed to update profile',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
     }
   }
 }

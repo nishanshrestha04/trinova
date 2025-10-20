@@ -158,6 +158,15 @@ def analyze_pose_image(request):
                     'visibility': landmark.visibility
                 })
             
+            # Convert issues (error markers) to list for JSON serialization
+            issues_list = []
+            for issue in issues:
+                issues_list.append({
+                    'x': issue[0],
+                    'y': issue[1],
+                    'radius': issue[2]
+                })
+            
             return Response({
                 'success': True,
                 'pose': pose_name,
@@ -165,6 +174,9 @@ def analyze_pose_image(request):
                 'score': score,
                 'message': message,
                 'landmarks': landmarks_list,
+                'issues': issues_list,
+                'image_width': w,
+                'image_height': h,
                 'feedback': {
                     'detected': True,
                     'issues_count': len(issues),

@@ -8,7 +8,7 @@ import json
 
 def test_authentication_flow():
     """Test the complete authentication flow"""
-    base_url = "http://192.168.18.6:8000/api/auth"
+    base_url = "http://192.168.1.116:8000/api/auth"
     
     print("🧘 Testing YogAI Authentication API...")
     print("=" * 50)

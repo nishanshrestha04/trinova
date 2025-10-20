@@ -3,7 +3,7 @@ import requests
 import json
 
 # Test the authentication API
-base_url = "http://192.168.18.6:8000/api/auth"
+base_url = "http://192.168.1.116:8000/api/auth"
 
 # Test with wrong credentials
 print("Testing with wrong credentials...")

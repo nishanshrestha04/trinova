@@ -5,6 +5,7 @@ class User {
   final String firstName;
   final String lastName;
   final DateTime? dateJoined;
+  final String? profilePicture;
 
   User({
     required this.id,
@@ -13,9 +14,12 @@ class User {
     required this.firstName,
     required this.lastName,
     this.dateJoined,
+    this.profilePicture,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    print('DEBUG User.fromJson: $json');
+    print('DEBUG date_joined value: ${json['date_joined']}');
     return User(
       id: json['id'],
       username: json['username'],
@@ -25,6 +29,7 @@ class User {
       dateJoined: json['date_joined'] != null
           ? DateTime.parse(json['date_joined'])
           : null,
+      profilePicture: json['profile_picture'],
     );
   }
 
@@ -36,8 +41,23 @@ class User {
       'first_name': firstName,
       'last_name': lastName,
       'date_joined': dateJoined?.toIso8601String(),
+      'profile_picture': profilePicture,
     };
   }
 
-  String get fullName => '$firstName $lastName'.trim();
+  String _capitalizeWords(String text) {
+    if (text.isEmpty) return text;
+    return text
+        .split(' ')
+        .map((word) {
+          if (word.isEmpty) return word;
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
+  }
+
+  String get fullName {
+    final name = '$firstName $lastName'.trim();
+    return _capitalizeWords(name);
+  }
 }

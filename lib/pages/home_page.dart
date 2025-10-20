@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/auth_provider.dart';
 import 'auth/login_page.dart';
 import 'pose_camera_page.dart';
+import 'settings_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,7 +19,6 @@ class _HomePageState extends State<HomePage> {
   static const List<Widget> _pages = <Widget>[
     _HomeTab(),
     _PosesTab(),
-    _ProgressTab(),
     _ProfileTab(),
   ];
 
@@ -43,10 +44,6 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.self_improvement),
             label: 'Poses',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.show_chart),
-            label: 'Progress',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
@@ -95,14 +92,43 @@ class _HomePageState extends State<HomePage> {
 }
 
 // Home Tab
-class _HomeTab extends StatelessWidget {
+class _HomeTab extends StatefulWidget {
   const _HomeTab();
 
+  @override
+  State<_HomeTab> createState() => _HomeTabState();
+}
+
+class _HomeTabState extends State<_HomeTab> {
   String _getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'Good Morning';
     if (hour < 17) return 'Good Afternoon';
     return 'Good Evening';
+  }
+
+  String _capitalizeName(String name) {
+    if (name.isEmpty) return name;
+    return name[0].toUpperCase() + name.substring(1).toLowerCase();
+  }
+
+  void _navigateToPosesTab() {
+    // Navigate to poses tab (index 1)
+    final homePageState = context.findAncestorStateOfType<_HomePageState>();
+    homePageState?._onItemTapped(1);
+  }
+
+  void _startPoseDetection(String poseName, String sanskrit, Color color) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PoseCameraPage(
+          poseName: poseName,
+          poseSanskrit: sanskrit,
+          themeColor: color,
+        ),
+      ),
+    );
   }
 
   @override
@@ -139,7 +165,9 @@ class _HomeTab extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 user != null
-                    ? user.firstName.isNotEmpty ? user.firstName : user.username
+                    ? user.firstName.isNotEmpty
+                          ? _capitalizeName(user.firstName)
+                          : _capitalizeName(user.username)
                     : 'Yogi',
                 style: TextStyle(fontSize: 20, color: Colors.grey.shade600),
               ),
@@ -197,9 +225,7 @@ class _HomeTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {
-                        // Navigate to poses tab or start session
-                      },
+                      onPressed: _navigateToPosesTab,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: const Color(0xFF667eea),
@@ -268,10 +294,10 @@ class _HomeTab extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _buildPoseCard(
-                'Mountain Pose',
-                'Tadasana',
+                'Cobra Pose',
+                'Bhujangasana',
                 'Beginner • 2 min',
-                Icons.landscape,
+                Icons.pets,
                 const Color(0xFF667eea),
               ),
               const SizedBox(height: 12),
@@ -391,62 +417,70 @@ class _HomeTab extends StatelessWidget {
     IconData icon,
     Color color,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+    return InkWell(
+      onTap: () => _startPoseDetection(name, sanskrit, color),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            child: Icon(icon, color: color, size: 32),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  sanskrit,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  details,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                ),
-              ],
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 32),
             ),
-          ),
-          Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400, size: 20),
-        ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    sanskrit,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    details,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.grey.shade400,
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -900,11 +934,20 @@ class _ProfileTab extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Logout'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Logout',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: const Text('Are you sure you want to logout?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey.shade700,
+              ),
               child: const Text('Cancel'),
             ),
             TextButton(
@@ -917,7 +960,11 @@ class _ProfileTab extends StatelessWidget {
                 await authProvider.logout();
                 if (context.mounted) {}
               },
-              child: const Text('Logout', style: TextStyle(color: Colors.red)),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text(
+                'Logout',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         );
@@ -927,108 +974,383 @@ class _ProfileTab extends StatelessWidget {
 
   const _ProfileTab();
 
+  void _showProfilePictureDialog(
+    BuildContext context,
+    String? profilePictureUrl,
+  ) {
+    if (profilePictureUrl == null) return;
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Profile Picture',
+      barrierColor: Colors.black87,
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return FadeTransition(
+          opacity: animation,
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Stack(
+                children: [
+                  // Dismissible background
+                  Container(color: Colors.transparent),
+                  // Profile Picture with InteractiveViewer for zoom
+                  Center(
+                    child: Hero(
+                      tag: 'profile_picture',
+                      child: InteractiveViewer(
+                        minScale: 0.5,
+                        maxScale: 4.0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                blurRadius: 30,
+                                spreadRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 150,
+                            backgroundColor: Colors.white,
+                            backgroundImage: NetworkImage(profilePictureUrl),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Close Button
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 10,
+                    right: 20,
+                    child: IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.black.withValues(alpha: 0.5),
+                        padding: const EdgeInsets.all(12),
+                      ),
+                    ),
+                  ),
+                  // Hint text at bottom
+                  Positioned(
+                    bottom: 40,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _getJoinedText(DateTime? dateJoined) {
+    if (dateJoined == null) {
+      // Debug: print to see if we're getting null
+      print('DEBUG: dateJoined is null');
+      return 'Joined recently';
+    }
+
+    // Format as "Joined MMM dd, yyyy" (e.g., "Joined Jan 15, 2021")
+    final formatter = DateFormat('MMM dd, yyyy');
+    final formattedDate = formatter.format(dateJoined);
+    print('DEBUG: dateJoined = $dateJoined, formatted = $formattedDate');
+    return 'Joined $formattedDate';
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          title: const Text(
-            'Profile',
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.settings, color: Colors.black),
-              onPressed: () {},
-            ),
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF667eea).withValues(alpha: 0.05),
+            const Color(0xFF764ba2).withValues(alpha: 0.05),
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: SafeArea(
+        child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 24),
-              // Avatar
-              Center(
-                child: CircleAvatar(
-                  radius: 48,
-                  backgroundColor: const Color(0xFFf5f5f5),
-                  child: Icon(Icons.person, size: 64, color: Color(0xFF667eea)),
+              // Header with gradient background
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Settings Button Row
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SettingsPage(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.settings,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    // Avatar with border
+                    GestureDetector(
+                      onTap: () => _showProfilePictureDialog(
+                        context,
+                        user?.profilePicture,
+                      ),
+                      child: Stack(
+                        children: [
+                          Hero(
+                            tag: 'profile_picture',
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 4,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.2),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: CircleAvatar(
+                                radius: 60,
+                                backgroundColor: Colors.white,
+                                backgroundImage: user?.profilePicture != null
+                                    ? NetworkImage(user!.profilePicture!)
+                                    : null,
+                                child: user?.profilePicture == null
+                                    ? Icon(
+                                        Icons.person,
+                                        size: 70,
+                                        color: const Color(0xFF667eea),
+                                      )
+                                    : null,
+                              ),
+                            ),
+                          ),
+                          // Tap indicator - only show if user has a profile picture
+                          if (user?.profilePicture != null)
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFF667eea),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.zoom_in,
+                                  color: Color(0xFF667eea),
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Name
+                    Text(
+                      user?.fullName ?? 'Maya Sharma',
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    // Username
+                    Text(
+                      '@${user?.username ?? "mayasharma"}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    // Joined year with icon
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 14,
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _getJoinedText(user?.dateJoined),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 30),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-              // Name
-              Text(
-                user?.fullName ?? 'Maya Sharma',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              // Username
-              Text(
-                '@${user?.username ?? "mayasharma"}',
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
-                textAlign: TextAlign.center,
-              ),
-              // Joined year
-              const SizedBox(height: 4),
-              Text(
-                'Joined 2021',
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
 
-              // Logout Button at the bottom
-              const SizedBox(height: 24),
-              // Account Section (Card)
-              _sectionCard(
-                title: 'Account',
+              // Stats Cards
+              Padding(
+                padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
-                    _profileRow(
-                      'Email',
-                      user?.email ?? 'maya.sharma@email.com',
+                    // Stats Row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildStatCard(
+                            icon: Icons.self_improvement,
+                            value: '128',
+                            label: 'Sessions',
+                            color: const Color(0xFF667eea),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildStatCard(
+                            icon: Icons.local_fire_department,
+                            value: '45',
+                            label: 'Day Streak',
+                            color: Colors.orange,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildStatCard(
+                            icon: Icons.access_time,
+                            value: '2.5k',
+                            label: 'Minutes',
+                            color: const Color(0xFF764ba2),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              // Goals Section (Card)
-              _sectionCard(
-                title: 'Goals',
-                child: Column(
-                  children: [
-                    _goalRow('Flexibility', 'Improve flexibility'),
-                    _goalRow('Strength', 'Increase strength'),
-                    _goalRow('Stress Reduction', 'Reduce stress'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              // Achievements Section (Card)
-              _sectionCard(
-                title: 'Achievements',
-                child: Column(
-                  children: [
-                    _achievementRow(
-                      Icons.check_circle,
-                      'Completed 100 yoga sessions',
+                    const SizedBox(height: 20),
+
+                    // Account Info Card
+                    _buildModernCard(
+                      icon: Icons.email_outlined,
+                      iconColor: const Color(0xFF667eea),
+                      title: 'Email Address',
+                      subtitle: user?.email ?? 'maya.sharma@email.com',
                     ),
-                    _achievementRow(Icons.star, 'Mastered 5 advanced poses'),
+                    const SizedBox(height: 12),
+
+                    // Goals Section
+                    _buildSectionHeader('Your Goals'),
+                    const SizedBox(height: 12),
+                    _buildGoalCard(
+                      icon: Icons.accessibility_new,
+                      title: 'Flexibility',
+                      progress: 0.7,
+                      color: Colors.purple.shade400,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildGoalCard(
+                      icon: Icons.fitness_center,
+                      title: 'Strength',
+                      progress: 0.5,
+                      color: Colors.blue.shade400,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildGoalCard(
+                      icon: Icons.spa,
+                      title: 'Stress Reduction',
+                      progress: 0.85,
+                      color: Colors.green.shade400,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Achievements Section
+                    _buildSectionHeader('Achievements'),
+                    const SizedBox(height: 12),
+                    _buildAchievementCard(
+                      icon: Icons.emoji_events,
+                      title: '100 Sessions Milestone',
+                      description: 'Completed 100 yoga sessions',
+                      color: Colors.amber,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildAchievementCard(
+                      icon: Icons.star,
+                      title: 'Pose Master',
+                      description: 'Mastered 5 advanced poses',
+                      color: Colors.orange,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildAchievementCard(
+                      icon: Icons.favorite,
+                      title: 'Consistency King',
+                      description: '30 day practice streak',
+                      color: Colors.pink,
+                    ),
                     const SizedBox(height: 24),
+
+                    // Logout Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -1037,67 +1359,132 @@ class _ProfileTab extends StatelessWidget {
                           backgroundColor: Colors.red.shade400,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          elevation: 0,
                         ),
-                        child: const Text(
-                          'Logout',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.logout, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Logout',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: null,
     );
   }
 
-  Widget _profileRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(label, style: TextStyle(color: Colors.grey.shade700)),
+  Widget _buildStatCard({
+    required IconData icon,
+    required String value,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          Expanded(
-            child: Text(value, style: TextStyle(color: Colors.black)),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade800,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 
-  Widget _goalRow(String label, String action) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+  Widget _buildModernCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Row(
         children: [
-          SizedBox(
-            width: 100,
-            child: Text(label, style: TextStyle(color: Colors.grey.shade700)),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 24),
           ),
+          const SizedBox(width: 16),
           Expanded(
-            child: GestureDetector(
-              onTap: () {},
-              child: Text(
-                action,
-                style: const TextStyle(
-                  color: Color(0xFF667eea),
-                  decoration: TextDecoration.underline,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey.shade800,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -1105,33 +1492,35 @@ class _ProfileTab extends StatelessWidget {
     );
   }
 
-  Widget _achievementRow(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF667eea)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(text, style: const TextStyle(color: Colors.black)),
-          ),
-        ],
+  Widget _buildSectionHeader(String title) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey.shade800,
+        ),
       ),
     );
   }
 
-  Widget _sectionCard({required String title, required Widget child}) {
+  Widget _buildGoalCard({
+    required IconData icon,
+    required String title,
+    required double progress,
+    required Color color,
+  }) {
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 2),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.08),
-            blurRadius: 12,
+            color: Colors.grey.withValues(alpha: 0.1),
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
@@ -1139,12 +1528,103 @@ class _ProfileTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+              ),
+              Text(
+                '${(progress * 100).toInt()}%',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 10),
-          child,
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: color.withValues(alpha: 0.2),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+              minHeight: 8,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAchievementCard({
+    required IconData icon,
+    required String title,
+    required String description,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.check_circle, color: color, size: 24),
         ],
       ),
     );
