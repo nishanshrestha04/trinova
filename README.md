@@ -21,9 +21,6 @@ Control your yoga practice hands-free! The gesture control feature lets you:
 
 - **✋ Open Palm** → Pause live tracking
 - **👍 Thumbs Up** → Resume/Play live tracking  
-- **👉 Point** → Next exercise (coming soon)
-
-See **[GESTURE_CONTROL_GUIDE.md](GESTURE_CONTROL_GUIDE.md)** for detailed setup instructions.
 
 ### Quick Gesture Setup
 
