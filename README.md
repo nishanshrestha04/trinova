@@ -69,9 +69,6 @@ flutter run -d chrome
 flutter run
 ```
 
-## 📱 Running on Your Phone
-
-For detailed phone setup instructions, see **[PHONE_SETUP_GUIDE.md](PHONE_SETUP_GUIDE.md)**
 
 **Quick steps:**
 
@@ -247,13 +244,6 @@ pip install django djangorestframework opencv-python mediapipe numpy
 - Correct IP in pose_service.dart?
 - Firewall blocking port 8000?
 
-See **[PHONE_SETUP_GUIDE.md](PHONE_SETUP_GUIDE.md)** for detailed troubleshooting.
-
-## 📚 Documentation
-
-- [Running Guide](RUNNING_GUIDE.md) - Complete setup and running instructions
-- [Phone Setup Guide](PHONE_SETUP_GUIDE.md) - Detailed phone integration guide
-- [Physio README](Physio/README.md) - Standalone pose detection info
 
 ## 🤝 Contributing
 
@@ -266,6 +256,8 @@ This project is open source and available under the MIT License.
 ## 👥 Authors
 
 - Nishan Shrestha ([@nishanshrestha04](https://github.com/nishanshrestha04))
+- Ashlesha Shrestha ([@ashleshashrestha04](https://github.com/ashleshashrestha04))
+- Riya Shrestha ([@riyashresthaaa](https://github.com/riyashresthaaa))
 
 ## 🙏 Acknowledgments
 
