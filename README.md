@@ -4,11 +4,11 @@ AI-powered yoga pose detection app with real-time feedback and hands-free gestur
 
 ![YogAI](https://img.shields.io/badge/Flutter-3.9.0-blue) ![Django](https://img.shields.io/badge/Django-5.2.6-green) ![Python](https://img.shields.io/badge/Python-3.10-yellow)
 
-## ✨ Features
+## Features
 
-- 🎯 **AI-Powered Pose Detection** - Real-time analysis using MediaPipe
-- � **Hand Gesture Control** - Control live tracking hands-free with gestures
-- �📱 **Cross-Platform** - Works on Android, iOS, and Web
+- **AI-Powered Pose Detection** - Real-time analysis using MediaPipe
+- **Hand Gesture Control** - Control live tracking hands-free with gestures
+- **Cross-Platform** - Works on Android, iOS, and Web
 - 🧘 **3 Yoga Poses** - Tree, Cobra, and Warrior II
 - 📊 **Instant Feedback** - Get scored on pose accuracy (0-100%)
 - 💡 **Smart Tips** - Personalized corrections and suggestions
