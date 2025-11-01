@@ -1,4 +1,4 @@
-# YogAI 🧘‍♀️
+# YogAI 
 
 AI-powered yoga pose detection app with real-time feedback and hands-free gesture control. Practice yoga poses and get instant corrections using advanced computer vision technology.
 
@@ -9,30 +9,21 @@ AI-powered yoga pose detection app with real-time feedback and hands-free gestur
 - **AI-Powered Pose Detection** - Real-time analysis using MediaPipe
 - **Hand Gesture Control** - Control live tracking hands-free with gestures
 - **Cross-Platform** - Works on Android, iOS, and Web
-- 🧘 **3 Yoga Poses** - Tree, Cobra, and Warrior II
-- 📊 **Instant Feedback** - Get scored on pose accuracy (0-100%)
-- 💡 **Smart Tips** - Personalized corrections and suggestions
-- 📸 **Camera & Gallery** - Analyze live or from photos
-- 👤 **User Authentication** - Secure login and profile management
+- **3 Yoga Poses** - Tree, Cobra, and Warrior II
+- **Instant Feedback** - Get scored on pose accuracy (0-100%)
+- **Smart Tips** - Personalized corrections and suggestions
+- **Camera & Gallery** - Analyze live or from photos
+- **User Authentication** - Secure login and profile management
 
-## 🆕 Hand Gesture Control
+## Hand Gesture Control
 
 Control your yoga practice hands-free! The gesture control feature lets you:
 
 - **✋ Open Palm** → Pause live tracking
 - **👍 Thumbs Up** → Resume/Play live tracking  
 
-### Quick Gesture Setup
 
-```bash
-# Start the gesture server
-./start_gesture_server.sh
-
-# Then run the Flutter app
-flutter run
-```
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Flutter SDK (3.9.0+)
@@ -86,7 +77,7 @@ flutter run
    flutter run
    ```
 
-## 🎯 How to Use
+## How to Use
 
 1. **Launch the app** and login/register
 2. **Navigate to Poses tab** (second icon)
@@ -96,7 +87,7 @@ flutter run
 6. **Take a picture** or select from gallery
 7. **Get instant feedback** with score and corrections!
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 YogAI/
@@ -118,7 +109,7 @@ YogAI/
         └── evaluators/   # Pose evaluation logic
 ```
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/auth/register/` - Create account
@@ -131,24 +122,24 @@ YogAI/
 - `POST /api/poses/analyze/` - Analyze pose from image
 - `GET /api/poses/tips/<pose>/` - Get pose instructions
 
-## 🧘 Available Poses
+## Available Poses
 
-### 1. Tree Pose (Vrikshasana) 🌳
+### 1. Tree Pose (Vrikshasana) 
 - **Difficulty**: Beginner
 - **Benefits**: Balance, leg strength, focus
 - **Key Points**: Stand on one leg, foot on thigh, hands overhead
 
-### 2. Cobra Pose (Bhujangasana) 🐍
+### 2. Cobra Pose (Bhujangasana) 
 - **Difficulty**: Beginner
 - **Benefits**: Spine strength, chest opening, posture
 - **Key Points**: Lie face down, lift chest, slight bend in elbows
 
-### 3. Warrior II (Virabhadrasana II) ⚔️
+### 3. Warrior II (Virabhadrasana II) 
 - **Difficulty**: Intermediate
 - **Benefits**: Leg strength, stamina, hip flexibility
 - **Key Points**: Wide stance, front knee bent, arms parallel
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Flutter** - Cross-platform UI framework
@@ -167,7 +158,7 @@ YogAI/
 - **OpenCV** - Image processing
 - **NumPy** - Numerical computing
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 trinova/
@@ -205,7 +196,7 @@ trinova/
 └── RUNNING_GUIDE.md              # Detailed running guide
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Backend URL
 Edit `lib/services/pose_service.dart`:
@@ -222,7 +213,7 @@ Already configured in:
 - `android/app/src/main/AndroidManifest.xml` (Android)
 - `ios/Runner/Info.plist` (iOS - needs manual edit)
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Backend won't start
 ```bash
@@ -242,21 +233,22 @@ pip install django djangorestframework opencv-python mediapipe numpy
 - Firewall blocking port 8000?
 
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+## License
 
 This project is open source and available under the MIT License.
 
-## 👥 Authors
+## Authors
 
 - Nishan Shrestha ([@nishanshrestha04](https://github.com/nishanshrestha04))
 - Ashlesha Shrestha ([@ashleshashrestha04](https://github.com/ashleshashrestha04))
 - Riya Shrestha ([@riyashresthaaa](https://github.com/riyashresthaaa))
+- Sanket Parajuli ([@parajulisanket](https://github.com/parajulisanket))
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **MediaPipe** - Google's ML solutions
 - **Flutter** - Google's UI toolkit
