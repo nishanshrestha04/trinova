@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/auth_provider.dart';
 import 'auth/login_page.dart';
-import 'pose_camera_page.dart';
+import 'unified_pose_tracker_page.dart';
 import 'settings_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -121,13 +121,7 @@ class _HomeTabState extends State<_HomeTab> {
   void _startPoseDetection(String poseName, String sanskrit, Color color) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => PoseCameraPage(
-          poseName: poseName,
-          poseSanskrit: sanskrit,
-          themeColor: color,
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => const UnifiedPoseTrackerPage()),
     );
   }
 
@@ -490,21 +484,10 @@ class _HomeTabState extends State<_HomeTab> {
 class _PosesTab extends StatelessWidget {
   const _PosesTab();
 
-  void _startPoseDetection(
-    BuildContext context,
-    String poseName,
-    String sanskrit,
-    Color color,
-  ) {
+  void _startUnifiedTracker(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => PoseCameraPage(
-          poseName: poseName,
-          poseSanskrit: sanskrit,
-          themeColor: color,
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => const UnifiedPoseTrackerPage()),
     );
   }
 
@@ -543,56 +526,74 @@ class _PosesTab extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Featured Banner
+              // Start Tracking Button
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [Color(0xFF667eea), Color(0xFF764ba2)],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF667eea).withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
+                      color: const Color(0xFF667eea).withValues(alpha: 0.4),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    const Icon(Icons.videocam, color: Colors.white, size: 32),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Live Pose Detection',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                    const Icon(Icons.videocam, color: Colors.white, size: 48),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Unified Pose Tracker',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Track all poses with a single camera',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _startUnifiedTracker(context),
+                        icon: const Icon(Icons.play_arrow, size: 24),
+                        label: const Text(
+                          'Start Tracking',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Get real-time feedback using your webcam',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white.withValues(alpha: 0.9),
-                            ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF667eea),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ],
+                          elevation: 0,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
               // Available Poses Section
               Text(
@@ -605,63 +606,52 @@ class _PosesTab extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Tree Pose Card
-              _buildPoseCard(
-                context,
-                name: 'Tree Pose',
-                sanskrit: 'Vrikshasana',
-                difficulty: 'Beginner',
-                duration: '2-3 min',
-                description:
-                    'A balancing pose that improves focus and stability. Stand on one leg with the other foot on your thigh.',
-                benefits: [
-                  'Improves balance',
-                  'Strengthens legs',
-                  'Enhances focus',
+              // Poses Grid
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.75,
+                children: [
+                  _buildPoseInfoCard(
+                    name: 'Tree Pose',
+                    sanskrit: 'Vrikshasana',
+                    difficulty: 'Beginner',
+                    icon: Icons.park,
+                    color: Colors.green.shade600,
+                    benefits: [
+                      'Improves balance',
+                      'Strengthens legs',
+                      'Enhances focus',
+                    ],
+                  ),
+                  _buildPoseInfoCard(
+                    name: 'Cobra Pose',
+                    sanskrit: 'Bhujangasana',
+                    difficulty: 'Beginner',
+                    icon: Icons.pets,
+                    color: const Color(0xFF667eea),
+                    benefits: [
+                      'Opens chest',
+                      'Strengthens spine',
+                      'Improves posture',
+                    ],
+                  ),
+                  _buildPoseInfoCard(
+                    name: 'Warrior II',
+                    sanskrit: 'Virabhadrasana II',
+                    difficulty: 'Intermediate',
+                    icon: Icons.fitness_center,
+                    color: const Color(0xFF764ba2),
+                    benefits: [
+                      'Builds strength',
+                      'Increases stamina',
+                      'Opens hips',
+                    ],
+                  ),
                 ],
-                icon: Icons.park,
-                color: Colors.green.shade600,
-                pythonCommand: 'tree',
-              ),
-              const SizedBox(height: 16),
-
-              // Cobra Pose Card
-              _buildPoseCard(
-                context,
-                name: 'Cobra Pose',
-                sanskrit: 'Bhujangasana',
-                difficulty: 'Beginner',
-                duration: '2-3 min',
-                description:
-                    'A backbend that opens the chest and strengthens the spine. Lie on your stomach and lift your chest.',
-                benefits: [
-                  'Opens chest',
-                  'Strengthens spine',
-                  'Improves posture',
-                ],
-                icon: Icons.pets,
-                color: const Color(0xFF667eea),
-                pythonCommand: 'cobra',
-              ),
-              const SizedBox(height: 16),
-
-              // Warrior II Pose Card
-              _buildPoseCard(
-                context,
-                name: 'Warrior II',
-                sanskrit: 'Virabhadrasana II',
-                difficulty: 'Intermediate',
-                duration: '3-4 min',
-                description:
-                    'A standing pose that builds strength and stamina. Lunge with arms extended in a T-shape.',
-                benefits: [
-                  'Builds strength',
-                  'Increases stamina',
-                  'Opens hips',
-                ],
-                icon: Icons.fitness_center,
-                color: const Color(0xFF764ba2),
-                pythonCommand: 'warrior',
               ),
               const SizedBox(height: 24),
 
@@ -696,7 +686,7 @@ class _PosesTab extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Our AI uses MediaPipe to track your body movements and provide real-time corrections.',
+                            'Our AI uses MediaPipe to track your body movements and provide real-time corrections for all poses in one session.',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.blue.shade800,
@@ -716,17 +706,13 @@ class _PosesTab extends StatelessWidget {
     );
   }
 
-  Widget _buildPoseCard(
-    BuildContext context, {
+  Widget _buildPoseInfoCard({
     required String name,
     required String sanskrit,
     required String difficulty,
-    required String duration,
-    required String description,
-    required List<String> benefits,
     required IconData icon,
     required Color color,
-    required String pythonCommand,
+    required List<String> benefits,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -734,170 +720,117 @@ class _PosesTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
+            color: Colors.grey.withValues(alpha: 0.15),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Header Section
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icon and difficulty
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
+                ),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      difficulty,
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // Pose name
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade800,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+
+            // Sanskrit name
+            Text(
+              sanskrit,
+              style: TextStyle(
+                fontSize: 10,
+                fontStyle: FontStyle.italic,
+                color: Colors.grey.shade600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+
+            // Benefits (flexible to fill remaining space)
+            Flexible(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: benefits
+                    .take(2)
+                    .map(
+                      (benefit) => Padding(
+                        padding: const EdgeInsets.only(bottom: 3),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.check_circle, size: 12, color: color),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                benefit,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey.shade700,
+                                  height: 1.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: color, size: 32),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        sanskrit,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    difficulty,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Content Section
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 16,
-                      color: Colors.grey.shade600,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      duration,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade700,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Benefits:',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ...benefits.map(
-                  (benefit) => Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Row(
-                      children: [
-                        Icon(Icons.check_circle, size: 16, color: color),
-                        const SizedBox(width: 8),
-                        Text(
-                          benefit,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () =>
-                        _startPoseDetection(context, name, sanskrit, color),
-                    icon: const Icon(Icons.play_arrow, size: 20),
-                    label: const Text(
-                      'Start Practice',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: color,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1053,7 +986,6 @@ class _ProfileTab extends StatelessWidget {
                           horizontal: 20,
                           vertical: 12,
                         ),
-                        
                       ),
                     ),
                   ),

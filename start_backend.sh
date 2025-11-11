@@ -3,7 +3,7 @@
 # YogAI Quick Start Script
 # This script starts the backend server and opens instructions for running the app
 
-echo "🧘 Starting YogAI Backend Server..."
+echo "Starting YogAI Backend Server..."
 echo ""
 
 # Get the script directory

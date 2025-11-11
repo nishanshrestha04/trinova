@@ -18,7 +18,7 @@ class YogaGestureDetector {
 
   /// Get default URL based on platform
   /// For Android emulator: http://10.0.2.2:8000
-  /// For real device: http://192.168.1.28:8000 (your computer's local IP)
+  /// For real device: http://192.168.18.6:8000 (your computer's local IP)
   /// You can override by passing custom URL
   static String _getDefaultUrl() {
     // For real Android device, use your computer's local IP
