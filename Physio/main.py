@@ -19,11 +19,11 @@ def make_evaluator(name: str):
     if n in ["tree", "treepose", "vrikshasana", "vrksasana"]:
         return TreeEvaluator()
 
-    raise ValueError(f"Unknown pose '{name}'. Choose: catcow | cobra | warrior | tree | chair")
+    raise ValueError(f"Unknown pose '{name}'. Choose: cobra | tree | warrior1 | warrior | warrior2 | warrior3")
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pose", required=True, help="catcow | cobra | warrior | tree | chair")  # <-- extend help
+    ap.add_argument("--pose", required=True, help="cobra | tree | warrior1 | warrior | warrior2 | warrior3")
     ap.add_argument("--camera", type=int, default=0, help="webcam index (default 0)")
     args = ap.parse_args()
 

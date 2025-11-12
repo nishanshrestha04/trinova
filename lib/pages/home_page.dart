@@ -15,6 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  final PageController _pageController = PageController(initialPage: 0);
 
   static const List<Widget> _pages = <Widget>[
     _HomeTab(),
@@ -22,7 +23,24 @@ class _HomePageState extends State<HomePage> {
     _ProfileTab(),
   ];
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onPageChanged(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -36,7 +54,11 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: const Color(0xFF667eea),
         foregroundColor: Colors.white,
       ),
-      body: _pages[_selectedIndex],
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
@@ -131,112 +153,44 @@ class _HomeTabState extends State<_HomeTab> {
     final user = authProvider.user;
 
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF667eea).withValues(alpha: 0.05),
-            const Color(0xFF764ba2).withValues(alpha: 0.05),
-          ],
-        ),
-      ),
+      color: Colors.grey.shade50,
       child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Greeting Section
-              Text(
-                _getGreeting(),
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                user != null
-                    ? user.firstName.isNotEmpty
-                          ? _capitalizeName(user.firstName)
-                          : _capitalizeName(user.username)
-                    : 'Yogi',
-                style: TextStyle(fontSize: 20, color: Colors.grey.shade600),
-              ),
-              const SizedBox(height: 24),
-
-              // Quick Start Card
+              // Greeting Section - Carbon style
               Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey.shade300, width: 1),
                   ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF667eea).withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
-                      children: [
-                        Icon(
-                          Icons.self_improvement,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Start Your Practice',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
                     Text(
-                      'Begin your journey to better health and mindfulness',
+                      _getGreeting().toUpperCase(),
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
+                        letterSpacing: 1.0,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _navigateToPosesTab,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF667eea),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Start Session',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      user != null
+                          ? user.firstName.isNotEmpty
+                                ? _capitalizeName(user.firstName)
+                                : _capitalizeName(user.username)
+                          : 'Yogi',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade900,
                       ),
                     ),
                   ],
@@ -244,7 +198,84 @@ class _HomeTabState extends State<_HomeTab> {
               ),
               const SizedBox(height: 24),
 
-              // Today's Stats
+              // Quick Start Card - Carbon style
+              InkWell(
+                onTap: _navigateToPosesTab,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0f62fe),
+                    border: Border.all(color: Colors.black, width: 1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 2,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            color: Colors.white.withValues(alpha: 0.15),
+                            child: const Icon(
+                              Icons.self_improvement,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'START YOUR PRACTICE',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          const Icon(
+                            Icons.arrow_forward,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Begin your journey to better health and mindfulness',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.white.withValues(alpha: 0.85),
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Today's Stats Section Header
+              Text(
+                'TODAY\'S STATS',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Stats Grid - Carbon style
               Row(
                 children: [
                   Expanded(
@@ -252,7 +283,7 @@ class _HomeTabState extends State<_HomeTab> {
                       'Sessions',
                       '12',
                       Icons.calendar_today,
-                      const Color(0xFF667eea),
+                      const Color(0xFF0f62fe),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -261,16 +292,16 @@ class _HomeTabState extends State<_HomeTab> {
                       'Minutes',
                       '340',
                       Icons.access_time,
-                      const Color(0xFF764ba2),
+                      const Color(0xFF8a3ffc),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildStatCard(
                       'Streak',
-                      '7 days',
+                      '7',
                       Icons.local_fire_department,
-                      Colors.orange,
+                      Colors.orange.shade600,
                     ),
                   ),
                 ],
@@ -279,14 +310,15 @@ class _HomeTabState extends State<_HomeTab> {
 
               // Recommended Poses Section
               Text(
-                'Recommended for You',
+                'RECOMMENDED FOR YOU',
                 style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                  letterSpacing: 1.0,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildPoseCard(
                 'Cobra Pose',
                 'Bhujangasana',
@@ -294,62 +326,67 @@ class _HomeTabState extends State<_HomeTab> {
                 Icons.pets,
                 const Color(0xFF667eea),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _buildPoseCard(
                 'Warrior Pose',
                 'Virabhadrasana',
                 'Intermediate • 3 min',
                 Icons.fitness_center,
-                const Color(0xFF764ba2),
-              ),
-              const SizedBox(height: 12),
-              _buildPoseCard(
-                'Tree Pose',
-                'Vrikshasana',
-                'Beginner • 2 min',
-                Icons.nature,
-                Colors.green.shade600,
+                const Color(0xFF8a3ffc),
               ),
               const SizedBox(height: 24),
 
-              // Daily Tip
+              // Daily Tip - Carbon style
+              Text(
+                'DAILY TIP',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              const SizedBox(height: 12),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.amber.shade200),
+                  color: Colors.white,
+                  border: Border(
+                    left: BorderSide(color: Colors.amber.shade600, width: 3),
+                    top: BorderSide(color: Colors.grey.shade300, width: 1),
+                    right: BorderSide(color: Colors.grey.shade300, width: 1),
+                    bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 2,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.lightbulb_outline,
-                      color: Colors.amber.shade700,
-                      size: 32,
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      color: Colors.amber.shade50,
+                      child: Icon(
+                        Icons.lightbulb_outline,
+                        color: Colors.amber.shade700,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Daily Tip',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.amber.shade900,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Practice yoga on an empty stomach for best results',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.amber.shade800,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        'Focus on your breath. Proper breathing enhances every pose and brings mindfulness to your practice.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade800,
+                          height: 1.5,
+                        ),
                       ),
                     ),
                   ],
@@ -373,31 +410,41 @@ class _HomeTabState extends State<_HomeTab> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        border: Border(
+          left: BorderSide(color: color, width: 3),
+          top: BorderSide(color: Colors.grey.shade300, width: 1),
+          right: BorderSide(color: Colors.grey.shade300, width: 1),
+          bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 28),
+          Icon(icon, color: color, size: 24),
           const SizedBox(height: 8),
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade800,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade900,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
-            label,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            label.toUpperCase(),
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey.shade600,
+              letterSpacing: 0.5,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -413,30 +460,31 @@ class _HomeTabState extends State<_HomeTab> {
   ) {
     return InkWell(
       onTap: () => _startPoseDetection(name, sanskrit, color),
-      borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          border: Border(
+            left: BorderSide(color: color, width: 3),
+            top: BorderSide(color: Colors.grey.shade300, width: 1),
+            right: BorderSide(color: Colors.grey.shade300, width: 1),
+            bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 32),
+              width: 50,
+              height: 50,
+              color: color.withValues(alpha: 0.1),
+              child: Icon(icon, color: color, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -444,18 +492,19 @@ class _HomeTabState extends State<_HomeTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    name,
+                    name.toUpperCase(),
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade800,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade900,
+                      letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     sanskrit,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontStyle: FontStyle.italic,
                       color: Colors.grey.shade600,
                     ),
@@ -463,16 +512,12 @@ class _HomeTabState extends State<_HomeTab> {
                   const SizedBox(height: 4),
                   Text(
                     details,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                   ),
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.grey.shade400,
-              size: 20,
-            ),
+            Icon(Icons.arrow_forward, color: Colors.grey.shade400, size: 18),
           ],
         ),
       ),
@@ -521,100 +566,153 @@ class _PosesTab extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'AI-powered pose detection and real-time feedback',
+                'Practice yoga with AI-powered real-time feedback',
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 24),
 
-              // Start Tracking Button
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+              // Start Practice Button - Carbon style
+              InkWell(
+                onTap: () => _startUnifiedTracker(context),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0f62fe),
+                    border: Border.all(color: Colors.black, width: 1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 2,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
                   ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF667eea).withValues(alpha: 0.4),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Icon(Icons.videocam, color: Colors.white, size: 48),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Unified Pose Tracker',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        color: Colors.white.withValues(alpha: 0.15),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'START PRACTICE',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Begin your yoga session',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white.withValues(alpha: 0.8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward,
                         color: Colors.white,
+                        size: 24,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Track all poses with a single camera',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _startUnifiedTracker(context),
-                        icon: const Icon(Icons.play_arrow, size: 24),
-                        label: const Text(
-                          'Start Tracking',
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              // Available Poses Section - Carbon style
+              Container(
+                padding: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'AVAILABLE POSES',
                           style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade600,
+                            letterSpacing: 1.2,
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF667eea),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        const SizedBox(height: 4),
+                        Text(
+                          '5 poses • 3 levels',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
                           ),
-                          elevation: 0,
                         ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: const Color(0xFF0f62fe),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(
+                            Icons.auto_awesome,
+                            size: 14,
+                            color: Color(0xFF0f62fe),
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'AI POWERED',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF0f62fe),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
-              // Available Poses Section
-              Text(
-                'Available Poses',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Poses Grid
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.75,
-                children: [
+              // BEGINNER Section
+              _buildDifficultySection(
+                level: 'BEGINNER',
+                description: 'Perfect for starting your yoga journey',
+                color: Colors.green.shade600,
+                poses: [
                   _buildPoseInfoCard(
                     name: 'Tree Pose',
                     sanskrit: 'Vrikshasana',
@@ -639,6 +737,28 @@ class _PosesTab extends StatelessWidget {
                       'Improves posture',
                     ],
                   ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // INTERMEDIATE Section
+              _buildDifficultySection(
+                level: 'INTERMEDIATE',
+                description: 'Build strength and flexibility',
+                color: Colors.orange.shade600,
+                poses: [
+                  _buildPoseInfoCard(
+                    name: 'Warrior I',
+                    sanskrit: 'Virabhadrasana I',
+                    difficulty: 'Intermediate',
+                    icon: Icons.fitness_center,
+                    color: Colors.red.shade600,
+                    benefits: [
+                      'Strengthens legs',
+                      'Opens hips & chest',
+                      'Improves balance',
+                    ],
+                  ),
                   _buildPoseInfoCard(
                     name: 'Warrior II',
                     sanskrit: 'Virabhadrasana II',
@@ -655,41 +775,65 @@ class _PosesTab extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Info Card
+              // ADVANCED Section
+              _buildDifficultySection(
+                level: 'ADVANCED',
+                description: 'Master challenging poses',
+                color: Colors.red.shade700,
+                poses: [
+                  _buildPoseInfoCard(
+                    name: 'Warrior III',
+                    sanskrit: 'Virabhadrasana III',
+                    difficulty: 'Advanced',
+                    icon: Icons.fitness_center,
+                    color: Colors.orange.shade600,
+                    benefits: [
+                      'Improves balance',
+                      'Strengthens core',
+                      'Tones legs',
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Info Card - Carbon style
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.blue.shade200),
+                  color: Colors.grey.shade50,
+                  border: Border.all(color: Colors.grey.shade300, width: 1),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: Colors.blue.shade700,
-                      size: 28,
+                      color: Colors.grey.shade700,
+                      size: 20,
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'How it works',
+                            'PRO TIP',
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade900,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade900,
+                              letterSpacing: 0.5,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Text(
-                            'Our AI uses MediaPipe to track your body movements and provide real-time corrections for all poses in one session.',
+                            'Use hand gestures to control your practice: Thumbs up to start/resume, Open palm to pause.',
                             style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.blue.shade800,
+                              fontSize: 13,
+                              color: Colors.grey.shade700,
+                              height: 1.4,
                             ),
                           ),
                         ],
@@ -714,124 +858,211 @@ class _PosesTab extends StatelessWidget {
     required Color color,
     required List<String> benefits,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.15),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return SizedBox(
+      width: 165, // Fixed width for Wrap layout
+      height: 200, // Fixed height
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            left: BorderSide(color: color, width: 3),
+            top: BorderSide(color: Colors.grey.shade200, width: 1),
+            right: BorderSide(color: Colors.grey.shade200, width: 1),
+            bottom: BorderSide(color: Colors.grey.shade200, width: 1),
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Icon and difficulty
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
+            // Header section with icon and difficulty
+            Container(
+              padding: const EdgeInsets.all(12),
+              color: Colors.grey.shade50,
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    color: color.withValues(alpha: 0.1),
+                    child: Icon(icon, color: color, size: 24),
                   ),
-                  child: Icon(icon, color: color, size: 24),
-                ),
-                Flexible(
-                  child: Container(
+                  const Spacer(),
+                  Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 6,
-                      vertical: 3,
+                      vertical: 4,
                     ),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
+                    color: color.withValues(alpha: 0.1),
                     child: Text(
-                      difficulty,
+                      difficulty == 'Beginner'
+                          ? 'BEGINNER'
+                          : difficulty == 'Intermediate'
+                          ? 'INTERMEDIATE'
+                          : 'ADVANCED',
                       style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w600,
                         color: color,
+                        letterSpacing: 0.3,
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Pose name
-            Text(
-              name,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
+                ],
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 2),
 
-            // Sanskrit name
-            Text(
-              sanskrit,
-              style: TextStyle(
-                fontSize: 10,
-                fontStyle: FontStyle.italic,
-                color: Colors.grey.shade600,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 8),
-
-            // Benefits (flexible to fill remaining space)
-            Flexible(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: benefits
-                    .take(2)
-                    .map(
-                      (benefit) => Padding(
-                        padding: const EdgeInsets.only(bottom: 3),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(Icons.check_circle, size: 12, color: color),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                benefit,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.grey.shade700,
-                                  height: 1.2,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
+            // Content section
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Pose name
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade900,
+                        height: 1.2,
                       ),
-                    )
-                    .toList(),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+
+                    // Sanskrit name
+                    Text(
+                      sanskrit,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                        height: 1.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Benefits
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: benefits
+                            .take(2)
+                            .map(
+                              (benefit) => Padding(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      margin: const EdgeInsets.only(top: 4),
+                                      width: 3,
+                                      height: 3,
+                                      color: color,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        benefit,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey.shade700,
+                                          height: 1.3,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDifficultySection({
+    required String level,
+    required String description,
+    required Color color,
+    required List<Widget> poses,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section header
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          decoration: BoxDecoration(
+            border: Border(left: BorderSide(color: color, width: 3)),
+            color: color.withValues(alpha: 0.05),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      level,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: color,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  border: Border.all(color: color, width: 1),
+                ),
+                child: Text(
+                  '${poses.length}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Poses in this section
+        Wrap(spacing: 16, runSpacing: 16, children: poses),
+      ],
     );
   }
 }
@@ -1024,135 +1255,88 @@ class _ProfileTab extends StatelessWidget {
     final user = authProvider.user;
 
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF667eea).withValues(alpha: 0.05),
-            const Color(0xFF764ba2).withValues(alpha: 0.05),
-          ],
-        ),
-      ),
+      color: Colors.grey.shade50,
       child: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Header with gradient background
+              // Header with Carbon style
               Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
+                color: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 24,
+                  horizontal: 20,
                 ),
                 child: Column(
                   children: [
                     // Settings Button Row
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SettingsPage(),
-                                ),
-                              );
-                            },
-                            icon: const Icon(
-                              Icons.settings,
-                              color: Colors.white,
-                            ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SettingsPage(),
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.settings,
+                            color: Colors.grey.shade700,
+                            size: 24,
                           ),
-                        ],
-                      ),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.grey.shade100,
+                            padding: const EdgeInsets.all(8),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 10),
-                    // Avatar with border
+                    const SizedBox(height: 8),
+                    // Avatar
                     GestureDetector(
                       onTap: () => _showProfilePictureDialog(
                         context,
                         user?.profilePicture,
                       ),
-                      child: Stack(
-                        children: [
-                          Hero(
-                            tag: 'profile_picture',
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 4,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.2),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
-                              ),
-                              child: CircleAvatar(
-                                radius: 60,
-                                backgroundColor: Colors.white,
-                                backgroundImage: user?.profilePicture != null
-                                    ? NetworkImage(user!.profilePicture!)
-                                    : null,
-                                child: user?.profilePicture == null
-                                    ? Icon(
-                                        Icons.person,
-                                        size: 70,
-                                        color: const Color(0xFF667eea),
-                                      )
-                                    : null,
-                              ),
-                            ),
+                      child: Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF0f62fe),
+                            width: 3,
                           ),
-                          // Tap indicator - only show if user has a profile picture
-                          if (user?.profilePicture != null)
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: const Color(0xFF667eea),
-                                    width: 2,
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.zoom_in,
-                                  color: Color(0xFF667eea),
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                        ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 58,
+                          backgroundColor: Colors.grey.shade100,
+                          backgroundImage: user?.profilePicture != null
+                              ? NetworkImage(user!.profilePicture!)
+                              : null,
+                          child: user?.profilePicture == null
+                              ? Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color: Colors.grey.shade400,
+                                )
+                              : null,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     // Name
                     Text(
                       user?.fullName ?? 'Maya Sharma',
-                      style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade900,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -1161,158 +1345,174 @@ class _ProfileTab extends StatelessWidget {
                     Text(
                       '@${user?.username ?? "mayasharma"}',
                       style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 4),
-                    // Joined year with icon
+                    // Joined date
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.calendar_today,
-                          size: 14,
-                          color: Colors.white.withValues(alpha: 0.8),
+                          size: 12,
+                          color: Colors.grey.shade500,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           _getJoinedText(user?.dateJoined),
                           style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 30),
                   ],
                 ),
               ),
 
-              // Stats Cards
+              // Divider
+              Container(height: 1, color: Colors.grey.shade300),
+
+              // Profile Content
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Stats Section Header
+                    Text(
+                      'STATISTICS',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     // Stats Row
                     Row(
                       children: [
                         Expanded(
-                          child: _buildStatCard(
+                          child: _buildProfileStatCard(
                             icon: Icons.self_improvement,
                             value: '128',
                             label: 'Sessions',
-                            color: const Color(0xFF667eea),
+                            color: const Color(0xFF0f62fe),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _buildStatCard(
+                          child: _buildProfileStatCard(
                             icon: Icons.local_fire_department,
                             value: '45',
-                            label: 'Day Streak',
-                            color: Colors.orange,
+                            label: 'Streak',
+                            color: Colors.orange.shade600,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _buildStatCard(
+                          child: _buildProfileStatCard(
                             icon: Icons.access_time,
                             value: '2.5k',
                             label: 'Minutes',
-                            color: const Color(0xFF764ba2),
+                            color: const Color(0xFF8a3ffc),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
-                    // Account Info Card
-                    _buildModernCard(
+                    // Account Info Section
+                    Text(
+                      'ACCOUNT',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildInfoCard(
                       icon: Icons.email_outlined,
-                      iconColor: const Color(0xFF667eea),
-                      title: 'Email Address',
-                      subtitle: user?.email ?? 'maya.sharma@email.com',
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Goals Section
-                    _buildSectionHeader('Your Goals'),
-                    const SizedBox(height: 12),
-                    _buildGoalCard(
-                      icon: Icons.accessibility_new,
-                      title: 'Flexibility',
-                      progress: 0.7,
-                      color: Colors.purple.shade400,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildGoalCard(
-                      icon: Icons.fitness_center,
-                      title: 'Strength',
-                      progress: 0.5,
-                      color: Colors.blue.shade400,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildGoalCard(
-                      icon: Icons.spa,
-                      title: 'Stress Reduction',
-                      progress: 0.85,
-                      color: Colors.green.shade400,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Achievements Section
-                    _buildSectionHeader('Achievements'),
-                    const SizedBox(height: 12),
-                    _buildAchievementCard(
-                      icon: Icons.emoji_events,
-                      title: '100 Sessions Milestone',
-                      description: 'Completed 100 yoga sessions',
-                      color: Colors.amber,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildAchievementCard(
-                      icon: Icons.star,
-                      title: 'Pose Master',
-                      description: 'Mastered 5 advanced poses',
-                      color: Colors.orange,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildAchievementCard(
-                      icon: Icons.favorite,
-                      title: 'Consistency King',
-                      description: '30 day practice streak',
-                      color: Colors.pink,
+                      label: 'Email',
+                      value: user?.email ?? 'maya.sharma@email.com',
+                      color: const Color(0xFF0f62fe),
                     ),
                     const SizedBox(height: 24),
 
+                    // Actions Section
+                    Text(
+                      'ACTIONS',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     // Logout Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => _showLogoutDialog(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red.shade400,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                    InkWell(
+                      onTap: () => _showLogoutDialog(context),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border(
+                            left: BorderSide(
+                              color: Colors.red.shade600,
+                              width: 3,
+                            ),
+                            top: BorderSide(
+                              color: Colors.grey.shade300,
+                              width: 1,
+                            ),
+                            right: BorderSide(
+                              color: Colors.grey.shade300,
+                              width: 1,
+                            ),
+                            bottom: BorderSide(
+                              color: Colors.grey.shade300,
+                              width: 1,
+                            ),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          elevation: 0,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.logout, size: 20),
-                            SizedBox(width: 8),
+                          children: [
+                            Icon(
+                              Icons.logout,
+                              color: Colors.red.shade600,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
                             Text(
-                              'Logout',
+                              'LOGOUT',
                               style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.red.shade600,
+                                letterSpacing: 0.5,
                               ),
+                            ),
+                            const Spacer(),
+                            Icon(
+                              Icons.arrow_forward,
+                              color: Colors.red.shade600,
+                              size: 18,
                             ),
                           ],
                         ),
@@ -1329,76 +1529,88 @@ class _ProfileTab extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard({
+  Widget _buildProfileStatCard({
     required IconData icon,
     required String value,
     required String label,
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        border: Border(
+          left: BorderSide(color: color, width: 3),
+          top: BorderSide(color: Colors.grey.shade300, width: 1),
+          right: BorderSide(color: Colors.grey.shade300, width: 1),
+          bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 28),
+          Icon(icon, color: color, size: 24),
           const SizedBox(height: 8),
           Text(
             value,
             style: TextStyle(
               fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade800,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade900,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
-            label,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-            textAlign: TextAlign.center,
+            label.toUpperCase(),
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey.shade600,
+              letterSpacing: 0.5,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildModernCard({
+  Widget _buildInfoCard({
     required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
+    required String label,
+    required String value,
+    required Color color,
   }) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        border: Border(
+          left: BorderSide(color: color, width: 3),
+          top: BorderSide(color: Colors.grey.shade300, width: 1),
+          right: BorderSide(color: Colors.grey.shade300, width: 1),
+          bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor, size: 24),
+            padding: const EdgeInsets.all(8),
+            color: color.withValues(alpha: 0.1),
+            child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -1406,163 +1618,26 @@ class _ProfileTab extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  label.toUpperCase(),
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 10,
                     color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade900,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey.shade800,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey.shade800,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGoalCard({
-    required IconData icon,
-    required String title,
-    required double progress,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
-                  ),
-                ),
-              ),
-              Text(
-                '${(progress * 100).toInt()}%',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: color.withValues(alpha: 0.2),
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-              minHeight: 8,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAchievementCard({
-    required IconData icon,
-    required String title,
-    required String description,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.check_circle, color: color, size: 24),
         ],
       ),
     );

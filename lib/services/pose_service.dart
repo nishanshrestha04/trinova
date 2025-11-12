@@ -31,8 +31,8 @@ class PoseService {
   }
 
   /// Analyze a pose image
-  /// [poseName] should be 'tree', 'cobra', or 'warrior'
-  /// [imageBytes] should be the image as bytes
+  /// [poseName] should be 'tree', 'cobra', 'warrior1', 'warrior', 'warrior2', or 'warrior3'
+  /// [base64Image] should be a base64 encoded image string
   static Future<Map<String, dynamic>> analyzePoseImage(
     String poseName,
     Uint8List imageBytes,

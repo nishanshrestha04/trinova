@@ -23,6 +23,7 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
   bool _isLoading = true;
   bool _isAnalyzing = false;
   bool _isLiveTracking = false;
+  bool _isPaused = false; // Track if tracking is paused
   String? _errorMessage;
   Map<String, dynamic>? _analysisResult;
   Timer? _analysisTimer;
@@ -56,9 +57,23 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
       'duration': 45, // 45 seconds recommended
     },
     {
+      'id': 'warrior1',
+      'name': 'Warrior I',
+      'sanskrit': 'Virabhadrasana I',
+      'icon': Icons.fitness_center,
+      'duration': 60, // 60 seconds recommended
+    },
+    {
       'id': 'warrior',
       'name': 'Warrior II',
       'sanskrit': 'Virabhadrasana II',
+      'icon': Icons.fitness_center,
+      'duration': 60, // 60 seconds recommended
+    },
+    {
+      'id': 'warrior3',
+      'name': 'Warrior III',
+      'sanskrit': 'Virabhadrasana III',
       'icon': Icons.fitness_center,
       'duration': 60, // 60 seconds recommended
     },
@@ -163,14 +178,23 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
   }
 
   void _handleGesture(String gesture) {
-    print('🎮 Handling gesture: $gesture (isLiveTracking: $_isLiveTracking)');
+    print(
+      '🎮 Handling gesture: $gesture (isLiveTracking: $_isLiveTracking, isPaused: $_isPaused)',
+    );
 
-    if (gesture == 'start' && !_isLiveTracking && _selectedPoseId != null) {
-      _startLiveTracking();
-      _showGestureFeedback('TRACKING STARTED by gesture');
-    } else if (gesture == 'stop' && _isLiveTracking) {
-      _stopLiveTracking();
-      _showGestureFeedback('TRACKING STOPPED by gesture');
+    if (gesture == 'start' &&
+        (!_isLiveTracking || _isPaused) &&
+        _selectedPoseId != null) {
+      if (_isPaused) {
+        _resumeLiveTracking();
+        _showGestureFeedback('TRACKING RESUMED by gesture');
+      } else {
+        _startLiveTracking();
+        _showGestureFeedback('TRACKING STARTED by gesture');
+      }
+    } else if (gesture == 'stop' && _isLiveTracking && !_isPaused) {
+      _pauseLiveTracking();
+      _showGestureFeedback('TRACKING PAUSED by gesture');
     } else if (gesture == 'next' && _isLiveTracking) {
       // Handle next pose gesture
       if (_isResting) {
@@ -218,50 +242,71 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
   }
 
   void _startLiveTracking() {
-    if (_isLiveTracking || _selectedPoseId == null) return;
+    if (_selectedPoseId == null) return;
+
+    // If already tracking, don't restart timers
+    if (_isLiveTracking && !_isPaused) return;
 
     setState(() {
       _isLiveTracking = true;
+      _isPaused = false;
       _analysisResult = null;
-      _poseSeconds = 0; // Reset timer
     });
 
-    // Start pose duration timer
-    _poseTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!_isLiveTracking) {
-        timer.cancel();
-        return;
-      }
-      setState(() {
-        _poseSeconds++;
-      });
-
-      // Auto-advance to next pose after recommended duration
-      final recommendedDuration = _selectedPose?['duration'] ?? 60;
-      if (_poseSeconds >= recommendedDuration) {
-        if (_currentPoseIndex < _availablePoses.length - 1) {
-          _goToNextPose();
-        } else {
-          // Completed last pose - show completion and navigate back
-          _completeAllPoses();
+    // Only create new timers if they don't exist
+    if (_poseTimer == null || !_poseTimer!.isActive) {
+      // Start pose duration timer
+      _poseTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!_isLiveTracking || _isPaused) {
+          return; // Don't cancel, just pause
         }
-      }
-    });
+        setState(() {
+          _poseSeconds++;
+        });
 
-    // Analyze pose every 2 seconds
-    _analysisTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (!_isLiveTracking || _cameraController == null) {
-        timer.cancel();
-        return;
-      }
-      _analyzeLiveFrame();
+        // Auto-advance to next pose after recommended duration
+        final recommendedDuration = _selectedPose?['duration'] ?? 60;
+        if (_poseSeconds >= recommendedDuration) {
+          if (_currentPoseIndex < _availablePoses.length - 1) {
+            _goToNextPose();
+          } else {
+            // Completed last pose - show completion and navigate back
+            _completeAllPoses();
+          }
+        }
+      });
+    }
+
+    // Only create analysis timer if it doesn't exist
+    if (_analysisTimer == null || !_analysisTimer!.isActive) {
+      // Analyze pose every 2 seconds
+      _analysisTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+        if (!_isLiveTracking || _isPaused || _cameraController == null) {
+          return; // Don't cancel, just pause
+        }
+        _analyzeLiveFrame();
+      });
+    }
+  }
+
+  void _pauseLiveTracking() {
+    setState(() {
+      _isPaused = true;
+    });
+  }
+
+  void _resumeLiveTracking() {
+    setState(() {
+      _isPaused = false;
     });
   }
 
   void _stopLiveTracking() {
     setState(() {
       _isLiveTracking = false;
+      _isPaused = false;
       _analysisResult = null;
+      _poseSeconds = 0; // Reset timer when completely stopping
     });
     _analysisTimer?.cancel();
     _analysisTimer = null;
@@ -676,18 +721,60 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Timer display only (no box, minimal)
+                        // Show timer and pause/resume button when tracking
                         if (_isResting)
                           _buildRestTimerDisplay()
-                        else if (_isLiveTracking)
-                          _buildPoseTimerDisplay()
+                        else if (_isLiveTracking || _isPaused)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  if (!_isPaused) _buildPoseTimerDisplay(),
+                                  if (_isPaused)
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.pause_circle,
+                                          color: Colors.white,
+                                          size: 20,
+                                          shadows: [
+                                            Shadow(
+                                              color: Colors.black,
+                                              blurRadius: 8,
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'PAUSED',
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            shadows: [
+                                              Shadow(
+                                                color: Colors.black,
+                                                blurRadius: 8,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  const SizedBox(width: 12),
+                                  _buildStartButton(),
+                                ],
+                              ),
+                            ],
+                          )
                         else
                           _buildStartButton(),
 
                         const Spacer(),
 
                         // Bottom controls - Next pose button and score
-                        if (_isLiveTracking && !_isResting)
+                        if (_isLiveTracking && !_isResting && !_isPaused)
                           _buildBottomControls(),
 
                         if (_isResting) _buildRestControls(),
@@ -701,6 +788,79 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
   }
 
   Widget _buildStartButton() {
+    // Show pause button when tracking and not paused
+    if (_isLiveTracking && !_isPaused) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [warningColor, Colors.orange.shade700],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: warningColor.withOpacity(0.4),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: TextButton.icon(
+          onPressed: _pauseLiveTracking,
+          icon: const Icon(Icons.pause, size: 18, color: Colors.white),
+          label: const Text(
+            'Pause',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+        ),
+      );
+    }
+
+    // Show resume button when paused
+    if (_isPaused) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [accentColor, Colors.green.shade700],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: accentColor.withOpacity(0.4),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: TextButton.icon(
+          onPressed: _resumeLiveTracking,
+          icon: const Icon(Icons.play_arrow, size: 18, color: Colors.white),
+          label: const Text(
+            'Resume',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+        ),
+      );
+    }
+
+    // Show start button when not tracking
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
