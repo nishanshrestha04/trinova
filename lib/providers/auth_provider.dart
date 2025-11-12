@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
+import '../services/google_auth_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
+  final GoogleAuthService _googleAuthService = GoogleAuthService();
 
   User? _user;
   bool _isLoading = false;
@@ -91,12 +93,31 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     await _authService.logout();
+    await _googleAuthService.signOut(); // Also sign out from Google
 
     _user = null;
     _isLoggedIn = false;
     _isLoading = false;
 
     notifyListeners();
+  }
+
+  // Sign in with Google
+  Future<Map<String, dynamic>> signInWithGoogle() async {
+    _isLoading = true;
+    notifyListeners();
+
+    final result = await _googleAuthService.signInWithGoogle();
+
+    if (result['success']) {
+      _user = result['user'];
+      _isLoggedIn = true;
+    }
+
+    _isLoading = false;
+    notifyListeners();
+
+    return result;
   }
 
   // Refresh user profile

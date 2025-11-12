@@ -6,7 +6,7 @@ import '../models/user.dart';
 import 'package:http_parser/http_parser.dart';
 
 class AuthService {
-  static const String baseUrl = 'http://192.168.18.6:8000/api/auth';
+  static const String baseUrl = 'http://192.168.1.109:8000/api/auth';
 
   // Get stored tokens
   Future<String?> getAccessToken() async {

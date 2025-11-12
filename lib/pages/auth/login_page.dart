@@ -48,6 +48,28 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    final result = await authProvider.signInWithGoogle();
+
+    if (mounted) {
+      if (result['success']) {
+        print('Navigating to home page...'); // Debug
+        // Navigate to home page and remove all previous routes
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+          (route) => false,
+        );
+      } else {
+        // Show error dialog with the actual error message
+        final errorMessage = result['message'] ?? 'Google sign in failed';
+        print('Google Sign-In Error: $errorMessage'); // Debug log
+        _showErrorDialog(errorMessage);
+      }
+    }
+  }
+
   void _showErrorDialog(String message) {
     // Provide a more user-friendly error message for invalid credentials
     String displayMessage = message;
@@ -264,6 +286,88 @@ class _LoginPageState extends State<LoginPage> {
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Divider with "OR"
+                          Row(
+                            children: [
+                              const Expanded(
+                                child: Divider(color: Colors.grey),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: Text(
+                                  'OR',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              const Expanded(
+                                child: Divider(color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Google Sign In Button
+                          Consumer<AuthProvider>(
+                            builder: (context, authProvider, child) {
+                              return SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: OutlinedButton.icon(
+                                  onPressed: authProvider.isLoading
+                                      ? null
+                                      : _signInWithGoogle,
+                                  icon: authProvider.isLoading
+                                      ? const SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Color(0xFF667eea),
+                                          ),
+                                        )
+                                      : Image.asset(
+                                          'images/google_logo.png',
+                                          height: 24,
+                                          width: 24,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return const Icon(
+                                                  Icons.g_mobiledata,
+                                                  size: 24,
+                                                  color: Color(0xFF667eea),
+                                                );
+                                              },
+                                        ),
+                                  label: Text(
+                                    authProvider.isLoading
+                                        ? 'Signing in...'
+                                        : 'Sign in with Google',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    side: BorderSide(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
                                 ),
                               );
                             },

@@ -19,7 +19,7 @@ echo "🔍 Checking Python dependencies..."
 python -c "import cv2, mediapipe, numpy" 2>/dev/null
 if [ $? -ne 0 ]; then
     echo "⚠️  Installing missing dependencies..."
-    pip install opencv-python mediapipe numpy
+    pip install opencv-python mediapipe numpy google-auth google-auth-oauthlib
 fi
 
 # Get local IP address

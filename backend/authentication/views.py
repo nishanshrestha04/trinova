@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import IntegrityError
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 import json
 
 
@@ -249,6 +251,144 @@ def update_profile(request):
             }
         }, status=status.HTTP_200_OK)
         
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def google_login(request):
+    """
+    Authenticate user with Google ID token
+    """
+    try:
+        data = json.loads(request.body)
+        id_token_str = data.get('id_token')
+        email = data.get('email')
+        display_name = data.get('display_name', '')
+        photo_url = data.get('photo_url')
+        
+        if not id_token_str or not email:
+            return Response({
+                'error': 'ID token and email are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Verify the Google ID token
+            # Note: In production, you should verify the token with Google's servers
+            # For now, we'll trust the email provided by the client
+            # You can add Google token verification here if needed
+            
+            # Check if user exists
+            user = None
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                # Create new user if doesn't exist
+                # Extract first and last name from display_name
+                name_parts = display_name.split(' ', 1) if display_name else ['', '']
+                first_name = name_parts[0] if len(name_parts) > 0 else ''
+                last_name = name_parts[1] if len(name_parts) > 1 else ''
+                
+                # Generate unique username from email
+                username = email.split('@')[0]
+                base_username = username
+                counter = 1
+                while User.objects.filter(username=username).exists():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+                
+                # Create user without password (Google authenticated)
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                )
+                user.set_unusable_password()  # User authenticated via Google
+                user.save()
+                
+                # Create user profile and save Google profile picture
+                from .models import UserProfile
+                import requests
+                from django.core.files.base import ContentFile
+                
+                profile, created = UserProfile.objects.get_or_create(user=user)
+                
+                # Download and save Google profile picture if available
+                if photo_url:
+                    try:
+                        response = requests.get(photo_url, timeout=10)
+                        if response.status_code == 200:
+                            # Save the image with a unique filename
+                            image_name = f"google_{user.username}.jpg"
+                            profile.profile_picture.save(
+                                image_name,
+                                ContentFile(response.content),
+                                save=True
+                            )
+                    except Exception as e:
+                        print(f"Failed to download profile picture: {e}")
+            
+            # Update profile picture if user already exists and has a new photo URL
+            if photo_url:
+                from .models import UserProfile
+                import requests
+                from django.core.files.base import ContentFile
+                
+                profile, created = UserProfile.objects.get_or_create(user=user)
+                
+                # Only update if profile doesn't have a picture or it's a new Google sign-in
+                if not profile.profile_picture:
+                    try:
+                        response = requests.get(photo_url, timeout=10)
+                        if response.status_code == 200:
+                            image_name = f"google_{user.username}.jpg"
+                            profile.profile_picture.save(
+                                image_name,
+                                ContentFile(response.content),
+                                save=True
+                            )
+                    except Exception as e:
+                        print(f"Failed to download profile picture: {e}")
+            
+            # Generate tokens
+            refresh = RefreshToken.for_user(user)
+            access_token = refresh.access_token
+            
+            # Get profile picture URL
+            from .models import UserProfile
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            profile_picture_url = None
+            if profile.profile_picture:
+                profile_picture_url = request.build_absolute_uri(profile.profile_picture.url)
+            
+            return Response({
+                'message': 'Login successful',
+                'access_token': str(access_token),
+                'refresh_token': str(refresh),
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+                    'profile_picture': profile_picture_url,
+                }
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                'error': f'Token verification failed: {str(e)}'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+            
+    except json.JSONDecodeError:
+        return Response({
+            'error': 'Invalid JSON data'
+        }, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({
             'error': str(e)

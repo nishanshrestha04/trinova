@@ -891,7 +891,13 @@ class _ProfileTab extends StatelessWidget {
                   listen: false,
                 );
                 await authProvider.logout();
-                if (context.mounted) {}
+                if (context.mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                    (route) => false,
+                  );
+                }
               },
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: const Text(
