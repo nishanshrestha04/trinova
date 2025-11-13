@@ -1,4 +1,4 @@
-# YogAI - AI-Powered Yoga Pose Detection App
+ko# YogAI - AI-Powered Yoga Pose Detection App
 
 <div align="center">
 
@@ -1755,8 +1755,6 @@ SOFTWARE.
         <br />
         <sub><b>Nishan Shrestha</b></sub>
       </a>
-      <br />
-      <sub>Lead Developer</sub>
     </td>
     <td align="center">
       <a href="https://github.com/ashleshashrestha04">
@@ -1764,8 +1762,6 @@ SOFTWARE.
         <br />
         <sub><b>Ashlesha Shrestha</b></sub>
       </a>
-      <br />
-      <sub>UI/UX Designer</sub>
     </td>
     <td align="center">
       <a href="https://github.com/riyashresthaaa">
@@ -1773,8 +1769,6 @@ SOFTWARE.
         <br />
         <sub><b>Riya Shrestha</b></sub>
       </a>
-      <br />
-      <sub>ML Engineer</sub>
     </td>
     <td align="center">
       <a href="https://github.com/parajulisanket">
@@ -1782,8 +1776,6 @@ SOFTWARE.
         <br />
         <sub><b>Sanket Parajuli</b></sub>
       </a>
-      <br />
-      <sub>Backend Developer</sub>
     </td>
   </tr>
 </table>
