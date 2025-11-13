@@ -1,4 +1,4 @@
-ko# YogAI - AI-Powered Yoga Pose Detection App
+# YogAI - AI-Powered Yoga Pose Detection App
 
 <div align="center">
 
