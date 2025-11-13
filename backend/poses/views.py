@@ -46,6 +46,17 @@ def get_available_poses(request):
             'color': '#667eea'
         },
         {
+            'id': 'warrior1',
+            'name': 'Warrior I',
+            'sanskrit': 'Virabhadrasana I',
+            'difficulty': 'Intermediate',
+            'duration': '3-4 min',
+            'description': 'A powerful standing pose with arms raised overhead and front knee bent at 90 degrees.',
+            'benefits': ['Strengthens legs', 'Opens hips and chest', 'Improves balance'],
+            'icon': 'fitness_center',
+            'color': '#f44336'
+        },
+        {
             'id': 'warrior',
             'name': 'Warrior II',
             'sanskrit': 'Virabhadrasana II',
@@ -55,6 +66,17 @@ def get_available_poses(request):
             'benefits': ['Builds strength', 'Increases stamina', 'Opens hips'],
             'icon': 'fitness_center',
             'color': '#764ba2'
+        },
+        {
+            'id': 'warrior3',
+            'name': 'Warrior III',
+            'sanskrit': 'Virabhadrasana III',
+            'difficulty': 'Advanced',
+            'duration': '3-4 min',
+            'description': 'A balancing pose with one leg extended back parallel to the ground and arms forward.',
+            'benefits': ['Improves balance', 'Strengthens core', 'Tones legs'],
+            'icon': 'fitness_center',
+            'color': '#ff9800'
         }
     ]
     
@@ -82,7 +104,7 @@ def analyze_pose_image(request):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # Validate pose name
-        valid_poses = ['tree', 'cobra', 'warrior', 'warrior2']
+        valid_poses = ['tree', 'cobra', 'warrior', 'warrior2', 'warrior1', 'warrior3']
         if pose_name not in valid_poses:
             return Response({
                 'error': f'Invalid pose. Choose from: {", ".join(valid_poses)}'
@@ -114,7 +136,9 @@ def analyze_pose_image(request):
         
         from src.evaluators.tree import TreeEvaluator
         from src.evaluators.cobra import CobraEvaluator
+        from src.evaluators.warrior1 import Warrior1Evaluator
         from src.evaluators.warrior2 import Warrior2Evaluator
+        from src.evaluators.warrior3 import Warrior3Evaluator
         import mediapipe as mp
         
         # Create evaluator based on pose
@@ -122,6 +146,10 @@ def analyze_pose_image(request):
             evaluator = TreeEvaluator()
         elif pose_name == 'cobra':
             evaluator = CobraEvaluator()
+        elif pose_name == 'warrior1':
+            evaluator = Warrior1Evaluator()
+        elif pose_name == 'warrior3':
+            evaluator = Warrior3Evaluator()
         else:  # warrior or warrior2
             evaluator = Warrior2Evaluator()
         
