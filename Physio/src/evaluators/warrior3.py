@@ -1,6 +1,3 @@
-# src/evaluators/warrior3.py
-# Warrior III (Virabhadrasana III) evaluator for your Asana project.
-# Side-view tolerant. Requires any 4 of 6 checks by default.
 from typing import Optional, List, Tuple
 import math
 from ..evaluator_base import PoseEvaluator, Issue

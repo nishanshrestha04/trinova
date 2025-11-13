@@ -5,8 +5,10 @@ from src.evaluators.warrior2 import Warrior2Evaluator
 from src.evaluators.tree import TreeEvaluator
 from src.evaluators.warrior1 import Warrior1Evaluator
 from src.evaluators.warrior3 import Warrior3Evaluator
+from src.evaluators.triangle import TriangleEvaluator
 
 def make_evaluator(name: str):
+    
     n = name.lower()
     if n == "cobra":
         return CobraEvaluator()
@@ -18,12 +20,14 @@ def make_evaluator(name: str):
         return Warrior3Evaluator() 
     if n in ["tree", "treepose", "vrikshasana", "vrksasana"]:
         return TreeEvaluator()
+    if n in ["triangle", "triangular", "trikonasana", "trikona", "trianglepose"]:
+        return TriangleEvaluator()
 
-    raise ValueError(f"Unknown pose '{name}'. Choose: catcow | cobra | warrior | tree | chair")
+    raise ValueError(f"Unknown pose '{name}'. Choose: catcow | cobra | warrior | tree | downwarddog | triangle")
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pose", required=True, help="catcow | cobra | warrior | tree | chair")  # <-- extend help
+    ap.add_argument("--pose", required=True, help="catcow | cobra | warrior | tree | downwarddog | triangle")  # <-- extend help
     ap.add_argument("--camera", type=int, default=0, help="webcam index (default 0)")
     args = ap.parse_args()
 
