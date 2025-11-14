@@ -6,7 +6,7 @@ class PoseService {
   // Change this to your computer's IP address when testing on phone
   // Find your IP: Linux: `ip addr show` or `hostname -I`
   // Updated: Using your computer's IP for network access
-  static const String baseUrl = 'http://192.168.18.6:8000/api/poses';
+  static const String baseUrl = 'http://192.168.1.109:8000/api/poses';
 
   // For localhost testing (Chrome on same computer):
   // static const String baseUrl = 'http://localhost:8000/api/poses';
@@ -31,8 +31,8 @@ class PoseService {
   }
 
   /// Analyze a pose image
-  /// [poseName] should be 'tree', 'cobra', or 'warrior'
-  /// [imageBytes] should be the image as bytes
+  /// [poseName] should be 'tree', 'cobra', 'warrior1', 'warrior', 'warrior2', or 'warrior3'
+  /// [base64Image] should be a base64 encoded image string
   static Future<Map<String, dynamic>> analyzePoseImage(
     String poseName,
     Uint8List imageBytes,

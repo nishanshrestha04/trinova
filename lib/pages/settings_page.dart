@@ -66,9 +66,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showImageSourceDialog() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.white,
       builder: (BuildContext context) {
         return SafeArea(
           child: Padding(
@@ -76,50 +74,124 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Choose Profile Picture',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
+                Container(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+                    ),
+                  ),
+                  child: Text(
+                    'CHOOSE PROFILE PICTURE',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade600,
+                      letterSpacing: 1.0,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF667eea).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      color: Color(0xFF667eea),
-                    ),
-                  ),
-                  title: const Text('Camera'),
+                const SizedBox(height: 16),
+                InkWell(
                   onTap: () {
                     Navigator.pop(context);
                     _pickImage(ImageSource.camera);
                   },
-                ),
-                ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(10),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF764ba2).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.white,
+                      border: Border(
+                        left: BorderSide(
+                          color: const Color(0xFF0f62fe),
+                          width: 3,
+                        ),
+                        top: BorderSide(color: Colors.grey.shade300, width: 1),
+                        right: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
+                        bottom: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.photo_library,
-                      color: Color(0xFF764ba2),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          color: const Color(0xFF0f62fe).withValues(alpha: 0.1),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Color(0xFF0f62fe),
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          'CAMERA',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade900,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  title: const Text('Gallery'),
+                ),
+                const SizedBox(height: 12),
+                InkWell(
                   onTap: () {
                     Navigator.pop(context);
                     _pickImage(ImageSource.gallery);
                   },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        left: BorderSide(
+                          color: const Color(0xFF8a3ffc),
+                          width: 3,
+                        ),
+                        top: BorderSide(color: Colors.grey.shade300, width: 1),
+                        right: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
+                        bottom: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          color: const Color(0xFF8a3ffc).withValues(alpha: 0.1),
+                          child: const Icon(
+                            Icons.photo_library,
+                            color: Color(0xFF8a3ffc),
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          'GALLERY',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade900,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 10),
               ],
@@ -209,116 +281,100 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: const Color(0xFF667eea),
-        foregroundColor: Colors.white,
+        title: const Text('SETTINGS'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.grey.shade900,
         elevation: 0,
+        centerTitle: false,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header with gradient
+            // Header with Carbon style
             Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 40, top: 20),
-                child: Column(
-                  children: [
-                    // Profile Picture
-                    Stack(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 4),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            radius: 60,
-                            backgroundColor: Colors.white,
-                            backgroundImage: _selectedImage != null
-                                ? FileImage(_selectedImage!)
-                                : (user?.profilePicture != null
-                                          ? NetworkImage(user!.profilePicture!)
-                                          : null)
-                                      as ImageProvider?,
-                            child:
-                                _selectedImage == null &&
-                                    user?.profilePicture == null
-                                ? const Icon(
-                                    Icons.person,
-                                    size: 70,
-                                    color: Color(0xFF667eea),
-                                  )
-                                : null,
+              color: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+              child: Column(
+                children: [
+                  // Profile Picture
+                  Stack(
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF0f62fe),
+                            width: 3,
                           ),
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: _showImageSourceDialog,
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.2),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
+                        child: CircleAvatar(
+                          radius: 58,
+                          backgroundColor: Colors.grey.shade100,
+                          backgroundImage: _selectedImage != null
+                              ? FileImage(_selectedImage!)
+                              : (user?.profilePicture != null
+                                        ? NetworkImage(user!.profilePicture!)
+                                        : null)
+                                    as ImageProvider?,
+                          child:
+                              _selectedImage == null &&
+                                  user?.profilePicture == null
+                              ? Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color: Colors.grey.shade400,
+                                )
+                              : null,
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: GestureDetector(
+                          onTap: _showImageSourceDialog,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFF0f62fe),
+                                width: 2,
                               ),
-                              child: const Icon(
-                                Icons.camera_alt,
-                                size: 20,
-                                color: Color(0xFF667eea),
-                              ),
+                              color: Colors.white,
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 20,
+                              color: Color(0xFF0f62fe),
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      user?.fullName ?? 'User',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    user?.fullName ?? 'User',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade900,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '@${user?.username ?? "username"}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '@${user?.username ?? "username"}',
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                  ),
+                ],
               ),
             ),
+
+            // Divider
+            Container(height: 1, color: Colors.grey.shade300),
 
             // Form
             Padding(
@@ -329,11 +385,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Personal Information',
+                      'PERSONAL INFORMATION',
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
+                        letterSpacing: 1.0,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -385,26 +442,48 @@ class _SettingsPageState extends State<SettingsPage> {
 
                     // Email (Read-only)
                     Text(
-                      'Account',
+                      'ACCOUNT',
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
+                        letterSpacing: 1.0,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
+                        color: Colors.white,
+                        border: Border(
+                          left: BorderSide(
+                            color: Colors.grey.shade400,
+                            width: 3,
+                          ),
+                          top: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 1,
+                          ),
+                          right: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 1,
+                          ),
+                          bottom: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 1,
+                          ),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.email_outlined,
-                            color: Colors.grey.shade600,
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            color: Colors.grey.shade200,
+                            child: Icon(
+                              Icons.email_outlined,
+                              color: Colors.grey.shade600,
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -412,18 +491,21 @@ class _SettingsPageState extends State<SettingsPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Email',
+                                  'EMAIL',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 10,
                                     color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   user?.email ?? 'email@example.com',
                                   style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey.shade800,
+                                    fontSize: 14,
+                                    color: Colors.grey.shade900,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
@@ -432,7 +514,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           Icon(
                             Icons.lock_outline,
                             color: Colors.grey.shade400,
-                            size: 20,
+                            size: 18,
                           ),
                         ],
                       ),
@@ -445,11 +527,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _saveChanges,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF667eea),
+                          backgroundColor: const Color(0xFF0f62fe),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
                           ),
                           elevation: 0,
                         ),
@@ -464,11 +546,12 @@ class _SettingsPageState extends State<SettingsPage> {
                                   ),
                                 ),
                               )
-                            : const Text(
-                                'Save Changes',
+                            : Text(
+                                'SAVE CHANGES',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                       ),
@@ -493,29 +576,37 @@ class _SettingsPageState extends State<SettingsPage> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFF667eea)),
+        labelStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+        prefixIcon: Container(
+          padding: const EdgeInsets.all(12),
+          child: Icon(icon, color: const Color(0xFF0f62fe), size: 20),
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF667eea), width: 2),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: Color(0xFF0f62fe), width: 2),
         ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red),
+        errorBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: Colors.red, width: 1),
         ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+        focusedErrorBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: Colors.red, width: 2),
         ),
         filled: true,
         fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 16,
+        ),
       ),
       validator: validator,
     );

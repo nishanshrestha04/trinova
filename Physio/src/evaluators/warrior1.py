@@ -1,4 +1,6 @@
-
+# src/evaluators/warrior1.py
+# Warrior I (Virabhadrasana I) rule-based evaluator for your Asana project.
+# Uses Mediapipe landmarks via utils.to_xy and utils.angle_3pt.
 from typing import Optional, List, Tuple
 import math
 from ..evaluator_base import PoseEvaluator, Issue
