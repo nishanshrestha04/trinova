@@ -1,4 +1,3 @@
-
 from typing import Optional, List, Tuple
 import math
 from ..evaluator_base import PoseEvaluator, Issue

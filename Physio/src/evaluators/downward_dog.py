@@ -1,3 +1,5 @@
+# src/evaluators/downward_dog.py
+# Downward-Facing Dog (Adho Mukha Svanasana) evaluator – one-side version.
 
 from typing import List, Tuple, Optional
 import math
