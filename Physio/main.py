@@ -6,6 +6,8 @@ from src.evaluators.tree import TreeEvaluator
 from src.evaluators.warrior1 import Warrior1Evaluator
 from src.evaluators.warrior3 import Warrior3Evaluator
 from src.evaluators.triangle import TriangleEvaluator
+from src.evaluators.chair import ChairEvaluator 
+from src.evaluators.downward_dog import DownwardDogEvaluator
 
 def make_evaluator(name: str):
     
@@ -22,12 +24,23 @@ def make_evaluator(name: str):
         return TreeEvaluator()
     if n in ["triangle", "triangular", "trikonasana", "trikona", "trianglepose"]:
         return TriangleEvaluator()
-
-    raise ValueError(f"Unknown pose '{name}'. Choose: catcow | cobra | warrior | tree | downwarddog | triangle")
+    if n in ["chair", "utkatasana", "utkata"]:
+        return ChairEvaluator()
+    if n in [
+        "downwarddog",
+        "downward_dog",
+        "downward-dog",
+        "down_dog",
+        "downwardfacingdog",
+        "adho-mukha-svanasana",
+        "adhomukhasvanasana",
+    ]:
+        return DownwardDogEvaluator()
+    raise ValueError(f"Unknown pose '{name}'. Choose: catcow | cobra | warrior | tree | triangle | chair | downwarddog")
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pose", required=True, help="catcow | cobra | warrior | tree | downwarddog | triangle")  # <-- extend help
+    ap.add_argument("--pose", required=True, help="catcow | cobra | warrior | tree | triangle | chair | downwarddog")  # <-- 8 poses supported
     ap.add_argument("--camera", type=int, default=0, help="webcam index (default 0)")
     args = ap.parse_args()
 
