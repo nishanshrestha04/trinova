@@ -36,11 +36,11 @@ def make_evaluator(name: str):
         "adhomukhasvanasana",
     ]:
         return DownwardDogEvaluator()
-    raise ValueError(f"Unknown pose '{name}'. Choose: catcow | cobra | warrior | tree | triangle | chair | downwarddog")
+    raise ValueError(f"Unknown pose '{name}'. Choose: cobra | warrior | warrior1 | warrior3 | tree | triangle | chair | downwarddog")
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pose", required=True, help="catcow | cobra | warrior | tree | triangle | chair | downwarddog")  # <-- 8 poses supported
+    ap.add_argument("--pose", required=True, help="cobra | warrior | warrior1 | warrior3 | tree | triangle | chair | downwarddog")
     ap.add_argument("--camera", type=int, default=0, help="webcam index (default 0)")
     args = ap.parse_args()
 

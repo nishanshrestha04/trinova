@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/auth_provider.dart';
+import '../services/user_stats_service.dart';
 import 'auth/login_page.dart';
 import 'unified_pose_tracker_page.dart';
 import 'settings_page.dart';
@@ -121,7 +122,50 @@ class _HomeTab extends StatefulWidget {
   State<_HomeTab> createState() => _HomeTabState();
 }
 
-class _HomeTabState extends State<_HomeTab> {
+class _HomeTabState extends State<_HomeTab> with WidgetsBindingObserver {
+  final UserStatsService _statsService = UserStatsService();
+  UserStats? _userStats;
+  bool _isLoadingStats = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadStats();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Reload stats when app comes to foreground
+      _loadStats();
+    }
+  }
+
+  Future<void> _loadStats() async {
+    try {
+      final stats = await _statsService.loadStats();
+      if (mounted) {
+        setState(() {
+          _userStats = stats;
+          _isLoadingStats = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingStats = false;
+        });
+      }
+    }
+  }
+
   String _getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'Good Morning';
@@ -140,11 +184,17 @@ class _HomeTabState extends State<_HomeTab> {
     homePageState?._onItemTapped(1);
   }
 
-  void _startPoseDetection(String poseName, String sanskrit, Color color) {
-    Navigator.push(
+  void _startPoseDetection(
+    String poseName,
+    String sanskrit,
+    Color color,
+  ) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const UnifiedPoseTrackerPage()),
     );
+    // Reload stats after returning from pose tracker
+    _loadStats();
   }
 
   @override
@@ -276,36 +326,43 @@ class _HomeTabState extends State<_HomeTab> {
               const SizedBox(height: 12),
 
               // Stats Grid - Carbon style
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      'Sessions',
-                      '12',
-                      Icons.calendar_today,
-                      const Color(0xFF0f62fe),
+              _isLoadingStats
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: _buildStatCard(
+                            'Sessions',
+                            '${_userStats?.totalSessions ?? 0}',
+                            Icons.calendar_today,
+                            const Color(0xFF0f62fe),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildStatCard(
+                            'Minutes',
+                            '${_userStats?.totalMinutes ?? 0}',
+                            Icons.access_time,
+                            const Color(0xFF8a3ffc),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildStatCard(
+                            'Streak',
+                            '${_userStats?.currentStreak ?? 0}',
+                            Icons.local_fire_department,
+                            Colors.orange.shade600,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      'Minutes',
-                      '340',
-                      Icons.access_time,
-                      const Color(0xFF8a3ffc),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      'Streak',
-                      '7',
-                      Icons.local_fire_department,
-                      Colors.orange.shade600,
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 24),
 
               // Recommended Poses Section
@@ -529,11 +586,99 @@ class _HomeTabState extends State<_HomeTab> {
 class _PosesTab extends StatelessWidget {
   const _PosesTab();
 
-  void _startUnifiedTracker(BuildContext context) {
-    Navigator.push(
+  // Centralized pose data - add new poses here and counts will update automatically
+  static final List<Map<String, dynamic>> _allPoses = [
+    // BEGINNER POSES
+    {
+      'name': 'Tree Pose',
+      'sanskrit': 'Vrikshasana',
+      'difficulty': 'Beginner',
+      'icon': Icons.park,
+      'color': Colors.green.shade600,
+      'benefits': ['Improves balance', 'Strengthens legs', 'Enhances focus'],
+    },
+    {
+      'name': 'Cobra Pose',
+      'sanskrit': 'Bhujangasana',
+      'difficulty': 'Beginner',
+      'icon': Icons.pets,
+      'color': const Color(0xFF667eea),
+      'benefits': ['Opens chest', 'Strengthens spine', 'Improves posture'],
+    },
+    {
+      'name': 'Chair Pose',
+      'sanskrit': 'Utkatasana',
+      'difficulty': 'Beginner',
+      'icon': Icons.event_seat,
+      'color': const Color(0xFF00bcd4),
+      'benefits': ['Strengthens thighs', 'Tones core', 'Improves posture'],
+    },
+    {
+      'name': 'Downward Dog',
+      'sanskrit': 'Adho Mukha Svanasana',
+      'difficulty': 'Beginner',
+      'icon': Icons.pets,
+      'color': const Color(0xFFff5722),
+      'benefits': [
+        'Stretches hamstrings',
+        'Strengthens arms',
+        'Energizes body',
+      ],
+    },
+    // INTERMEDIATE POSES
+    {
+      'name': 'Warrior I',
+      'sanskrit': 'Virabhadrasana I',
+      'difficulty': 'Intermediate',
+      'icon': Icons.fitness_center,
+      'color': Colors.red.shade600,
+      'benefits': [
+        'Strengthens legs',
+        'Opens hips & chest',
+        'Improves balance',
+      ],
+    },
+    {
+      'name': 'Warrior II',
+      'sanskrit': 'Virabhadrasana II',
+      'difficulty': 'Intermediate',
+      'icon': Icons.fitness_center,
+      'color': const Color(0xFF764ba2),
+      'benefits': ['Builds strength', 'Increases stamina', 'Opens hips'],
+    },
+    {
+      'name': 'Triangle Pose',
+      'sanskrit': 'Trikonasana',
+      'difficulty': 'Intermediate',
+      'icon': Icons.change_history,
+      'color': const Color(0xFF9c27b0),
+      'benefits': ['Stretches legs & hips', 'Opens chest', 'Improves balance'],
+    },
+    // ADVANCED POSES
+    {
+      'name': 'Warrior III',
+      'sanskrit': 'Virabhadrasana III',
+      'difficulty': 'Advanced',
+      'icon': Icons.fitness_center,
+      'color': Colors.orange.shade600,
+      'benefits': ['Improves balance', 'Strengthens core', 'Tones legs'],
+    },
+  ];
+
+  // Helper methods to get dynamic counts
+  static int get totalPoseCount => _allPoses.length;
+  static int get difficultyLevelCount =>
+      _allPoses.map((p) => p['difficulty']).toSet().length;
+  static List<Map<String, dynamic>> getPosesByDifficulty(String difficulty) {
+    return _allPoses.where((p) => p['difficulty'] == difficulty).toList();
+  }
+
+  void _startUnifiedTracker(BuildContext context) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const UnifiedPoseTrackerPage()),
     );
+    // Stats will be reloaded when HomeTab becomes visible again
   }
 
   @override
@@ -662,7 +807,7 @@ class _PosesTab extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '5 poses • 3 levels',
+                          '$totalPoseCount poses • $difficultyLevelCount levels',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade500,
@@ -712,32 +857,18 @@ class _PosesTab extends StatelessWidget {
                 level: 'BEGINNER',
                 description: 'Perfect for starting your yoga journey',
                 color: Colors.green.shade600,
-                poses: [
-                  _buildPoseInfoCard(
-                    name: 'Tree Pose',
-                    sanskrit: 'Vrikshasana',
-                    difficulty: 'Beginner',
-                    icon: Icons.park,
-                    color: Colors.green.shade600,
-                    benefits: [
-                      'Improves balance',
-                      'Strengthens legs',
-                      'Enhances focus',
-                    ],
-                  ),
-                  _buildPoseInfoCard(
-                    name: 'Cobra Pose',
-                    sanskrit: 'Bhujangasana',
-                    difficulty: 'Beginner',
-                    icon: Icons.pets,
-                    color: const Color(0xFF667eea),
-                    benefits: [
-                      'Opens chest',
-                      'Strengthens spine',
-                      'Improves posture',
-                    ],
-                  ),
-                ],
+                poses: getPosesByDifficulty('Beginner')
+                    .map(
+                      (pose) => _buildPoseInfoCard(
+                        name: pose['name'],
+                        sanskrit: pose['sanskrit'],
+                        difficulty: pose['difficulty'],
+                        icon: pose['icon'],
+                        color: pose['color'],
+                        benefits: List<String>.from(pose['benefits']),
+                      ),
+                    )
+                    .toList(),
               ),
               const SizedBox(height: 24),
 
@@ -746,32 +877,18 @@ class _PosesTab extends StatelessWidget {
                 level: 'INTERMEDIATE',
                 description: 'Build strength and flexibility',
                 color: Colors.orange.shade600,
-                poses: [
-                  _buildPoseInfoCard(
-                    name: 'Warrior I',
-                    sanskrit: 'Virabhadrasana I',
-                    difficulty: 'Intermediate',
-                    icon: Icons.fitness_center,
-                    color: Colors.red.shade600,
-                    benefits: [
-                      'Strengthens legs',
-                      'Opens hips & chest',
-                      'Improves balance',
-                    ],
-                  ),
-                  _buildPoseInfoCard(
-                    name: 'Warrior II',
-                    sanskrit: 'Virabhadrasana II',
-                    difficulty: 'Intermediate',
-                    icon: Icons.fitness_center,
-                    color: const Color(0xFF764ba2),
-                    benefits: [
-                      'Builds strength',
-                      'Increases stamina',
-                      'Opens hips',
-                    ],
-                  ),
-                ],
+                poses: getPosesByDifficulty('Intermediate')
+                    .map(
+                      (pose) => _buildPoseInfoCard(
+                        name: pose['name'],
+                        sanskrit: pose['sanskrit'],
+                        difficulty: pose['difficulty'],
+                        icon: pose['icon'],
+                        color: pose['color'],
+                        benefits: List<String>.from(pose['benefits']),
+                      ),
+                    )
+                    .toList(),
               ),
               const SizedBox(height: 24),
 
@@ -780,20 +897,18 @@ class _PosesTab extends StatelessWidget {
                 level: 'ADVANCED',
                 description: 'Master challenging poses',
                 color: Colors.red.shade700,
-                poses: [
-                  _buildPoseInfoCard(
-                    name: 'Warrior III',
-                    sanskrit: 'Virabhadrasana III',
-                    difficulty: 'Advanced',
-                    icon: Icons.fitness_center,
-                    color: Colors.orange.shade600,
-                    benefits: [
-                      'Improves balance',
-                      'Strengthens core',
-                      'Tones legs',
-                    ],
-                  ),
-                ],
+                poses: getPosesByDifficulty('Advanced')
+                    .map(
+                      (pose) => _buildPoseInfoCard(
+                        name: pose['name'],
+                        sanskrit: pose['sanskrit'],
+                        difficulty: pose['difficulty'],
+                        icon: pose['icon'],
+                        color: pose['color'],
+                        benefits: List<String>.from(pose['benefits']),
+                      ),
+                    )
+                    .toList(),
               ),
               const SizedBox(height: 20),
 
@@ -860,7 +975,7 @@ class _PosesTab extends StatelessWidget {
   }) {
     return SizedBox(
       width: 165, // Fixed width for Wrap layout
-      height: 200, // Fixed height
+      height: 155, // Reduced from 180 to prevent overflow with 4 cards
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -883,21 +998,21 @@ class _PosesTab extends StatelessWidget {
           children: [
             // Header section with icon and difficulty
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               color: Colors.grey.shade50,
               child: Row(
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: 36,
+                    height: 36,
                     color: color.withValues(alpha: 0.1),
-                    child: Icon(icon, color: color, size: 24),
+                    child: Icon(icon, color: color, size: 20),
                   ),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 6,
-                      vertical: 4,
+                      vertical: 3,
                     ),
                     color: color.withValues(alpha: 0.1),
                     child: Text(
@@ -921,7 +1036,7 @@ class _PosesTab extends StatelessWidget {
             // Content section
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -929,7 +1044,7 @@ class _PosesTab extends StatelessWidget {
                     Text(
                       name,
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.grey.shade900,
                         height: 1.2,
@@ -937,30 +1052,30 @@ class _PosesTab extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
 
                     // Sanskrit name
                     Text(
                       sanskrit,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 10,
                         color: Colors.grey.shade600,
                         height: 1.2,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
 
-                    // Benefits
+                    // Benefits - show only 1
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: benefits
-                            .take(2)
+                            .take(1) // Only show 1 benefit to save space
                             .map(
                               (benefit) => Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
+                                padding: const EdgeInsets.only(bottom: 4),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -970,12 +1085,12 @@ class _PosesTab extends StatelessWidget {
                                       height: 3,
                                       color: color,
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
                                         benefit,
                                         style: TextStyle(
-                                          fontSize: 11,
+                                          fontSize: 10,
                                           color: Colors.grey.shade700,
                                           height: 1.3,
                                         ),
@@ -1092,7 +1207,64 @@ class _ProgressTab extends StatelessWidget {
 }
 
 // Profile Tab
-class _ProfileTab extends StatelessWidget {
+class _ProfileTab extends StatefulWidget {
+  const _ProfileTab({Key? key}) : super(key: key);
+
+  @override
+  State<_ProfileTab> createState() => _ProfileTabState();
+}
+
+class _ProfileTabState extends State<_ProfileTab> with WidgetsBindingObserver {
+  final UserStatsService _statsService = UserStatsService();
+  UserStats? _userStats;
+  bool _isLoadingStats = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadStats();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Reload stats when app comes to foreground
+      _loadStats();
+    }
+  }
+
+  Future<void> _loadStats() async {
+    try {
+      final stats = await _statsService.loadStats();
+      if (mounted) {
+        setState(() {
+          _userStats = stats;
+          _isLoadingStats = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingStats = false;
+        });
+      }
+    }
+  }
+
+  String _formatMinutes(int minutes) {
+    if (minutes >= 1000) {
+      return '${(minutes / 1000).toStringAsFixed(1)}k';
+    }
+    return '$minutes';
+  }
+
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -1141,8 +1313,6 @@ class _ProfileTab extends StatelessWidget {
       },
     );
   }
-
-  const _ProfileTab();
 
   void _showProfilePictureDialog(
     BuildContext context,
@@ -1237,15 +1407,12 @@ class _ProfileTab extends StatelessWidget {
 
   String _getJoinedText(DateTime? dateJoined) {
     if (dateJoined == null) {
-      // Debug: print to see if we're getting null
-      print('DEBUG: dateJoined is null');
       return 'Joined recently';
     }
 
     // Format as "Joined MMM dd, yyyy" (e.g., "Joined Jan 15, 2021")
     final formatter = DateFormat('MMM dd, yyyy');
     final formattedDate = formatter.format(dateJoined);
-    print('DEBUG: dateJoined = $dateJoined, formatted = $formattedDate');
     return 'Joined $formattedDate';
   }
 
@@ -1395,36 +1562,45 @@ class _ProfileTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     // Stats Row
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildProfileStatCard(
-                            icon: Icons.self_improvement,
-                            value: '128',
-                            label: 'Sessions',
-                            color: const Color(0xFF0f62fe),
+                    _isLoadingStats
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: CircularProgressIndicator(),
+                            ),
+                          )
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: _buildProfileStatCard(
+                                  icon: Icons.self_improvement,
+                                  value: '${_userStats?.totalSessions ?? 0}',
+                                  label: 'Sessions',
+                                  color: const Color(0xFF0f62fe),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildProfileStatCard(
+                                  icon: Icons.local_fire_department,
+                                  value: '${_userStats?.currentStreak ?? 0}',
+                                  label: 'Streak',
+                                  color: Colors.orange.shade600,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildProfileStatCard(
+                                  icon: Icons.access_time,
+                                  value: _formatMinutes(
+                                    _userStats?.totalMinutes ?? 0,
+                                  ),
+                                  label: 'Minutes',
+                                  color: const Color(0xFF8a3ffc),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildProfileStatCard(
-                            icon: Icons.local_fire_department,
-                            value: '45',
-                            label: 'Streak',
-                            color: Colors.orange.shade600,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildProfileStatCard(
-                            icon: Icons.access_time,
-                            value: '2.5k',
-                            label: 'Minutes',
-                            color: const Color(0xFF8a3ffc),
-                          ),
-                        ),
-                      ],
-                    ),
                     const SizedBox(height: 24),
 
                     // Account Info Section

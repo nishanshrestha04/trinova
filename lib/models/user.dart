@@ -18,8 +18,6 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
-    print('DEBUG User.fromJson: $json');
-    print('DEBUG date_joined value: ${json['date_joined']}');
     return User(
       id: json['id'],
       username: json['username'],

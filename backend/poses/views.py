@@ -77,6 +77,39 @@ def get_available_poses(request):
             'benefits': ['Improves balance', 'Strengthens core', 'Tones legs'],
             'icon': 'fitness_center',
             'color': '#ff9800'
+        },
+        {
+            'id': 'triangle',
+            'name': 'Triangle Pose',
+            'sanskrit': 'Trikonasana',
+            'difficulty': 'Intermediate',
+            'duration': '2-3 min',
+            'description': 'A standing pose with wide legs, torso sideways, one hand reaching down and the other up.',
+            'benefits': ['Stretches legs and hips', 'Opens chest', 'Improves balance'],
+            'icon': 'change_history',
+            'color': '#9c27b0'
+        },
+        {
+            'id': 'chair',
+            'name': 'Chair Pose',
+            'sanskrit': 'Utkatasana',
+            'difficulty': 'Beginner',
+            'duration': '2-3 min',
+            'description': 'A standing pose with bent knees as if sitting in a chair, arms raised overhead.',
+            'benefits': ['Strengthens thighs', 'Tones core', 'Improves posture'],
+            'icon': 'event_seat',
+            'color': '#00bcd4'
+        },
+        {
+            'id': 'downwarddog',
+            'name': 'Downward Dog',
+            'sanskrit': 'Adho Mukha Svanasana',
+            'difficulty': 'Beginner',
+            'duration': '2-3 min',
+            'description': 'An inverted V-shape pose with hands and feet on the ground, hips raised high.',
+            'benefits': ['Stretches hamstrings', 'Strengthens arms', 'Energizes body'],
+            'icon': 'pets',
+            'color': '#ff5722'
         }
     ]
     
@@ -104,7 +137,7 @@ def analyze_pose_image(request):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # Validate pose name
-        valid_poses = ['tree', 'cobra', 'warrior', 'warrior2', 'warrior1', 'warrior3']
+        valid_poses = ['tree', 'cobra', 'warrior', 'warrior2', 'warrior1', 'warrior3', 'triangle', 'chair', 'downwarddog']
         if pose_name not in valid_poses:
             return Response({
                 'error': f'Invalid pose. Choose from: {", ".join(valid_poses)}'
@@ -139,6 +172,9 @@ def analyze_pose_image(request):
         from src.evaluators.warrior1 import Warrior1Evaluator
         from src.evaluators.warrior2 import Warrior2Evaluator
         from src.evaluators.warrior3 import Warrior3Evaluator
+        from src.evaluators.triangle import TriangleEvaluator
+        from src.evaluators.chair import ChairEvaluator
+        from src.evaluators.downward_dog import DownwardDogEvaluator
         import mediapipe as mp
         
         # Create evaluator based on pose
@@ -150,6 +186,12 @@ def analyze_pose_image(request):
             evaluator = Warrior1Evaluator()
         elif pose_name == 'warrior3':
             evaluator = Warrior3Evaluator()
+        elif pose_name == 'triangle':
+            evaluator = TriangleEvaluator()
+        elif pose_name == 'chair':
+            evaluator = ChairEvaluator()
+        elif pose_name == 'downwarddog':
+            evaluator = DownwardDogEvaluator()
         else:  # warrior or warrior2
             evaluator = Warrior2Evaluator()
         
@@ -289,6 +331,60 @@ def get_pose_tips(request, pose_name):
                 'Arms not level'
             ],
             'camera_setup': 'Position camera at chest height, showing full body from front'
+        },
+        'triangle': {
+            'name': 'Triangle Pose',
+            'sanskrit': 'Trikonasana',
+            'key_points': [
+                'Stand with feet wide apart',
+                'Keep both legs straight',
+                'Reach one hand down to ankle or shin',
+                'Extend other arm straight up',
+                'Turn torso to the side'
+            ],
+            'common_mistakes': [
+                'Bending the front knee',
+                'Leaning forward instead of sideways',
+                'Not opening chest fully',
+                'Hand too far from foot'
+            ],
+            'camera_setup': 'Position camera at chest height, showing full body from the side'
+        },
+        'chair': {
+            'name': 'Chair Pose',
+            'sanskrit': 'Utkatasana',
+            'key_points': [
+                'Stand with feet hip-width apart',
+                'Bend knees as if sitting in a chair',
+                'Raise arms overhead',
+                'Keep weight in heels',
+                'Engage core and keep back straight'
+            ],
+            'common_mistakes': [
+                'Knees extending past toes',
+                'Arching lower back',
+                'Leaning too far forward',
+                'Not bending knees enough'
+            ],
+            'camera_setup': 'Position camera at chest height, showing full body from the side'
+        },
+        'downwarddog': {
+            'name': 'Downward Dog',
+            'sanskrit': 'Adho Mukha Svanasana',
+            'key_points': [
+                'Start on hands and knees',
+                'Lift hips up and back',
+                'Keep arms and legs straight',
+                'Press heels toward floor',
+                'Form an inverted V-shape'
+            ],
+            'common_mistakes': [
+                'Rounding the back',
+                'Bending the knees',
+                'Shoulders not engaged',
+                'Hands too close to feet'
+            ],
+            'camera_setup': 'Position camera at chest height, showing full body from the side'
         }
     }
     

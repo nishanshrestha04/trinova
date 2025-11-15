@@ -55,7 +55,6 @@ class _LoginPageState extends State<LoginPage> {
 
     if (mounted) {
       if (result['success']) {
-        print('Navigating to home page...'); // Debug
         // Navigate to home page and remove all previous routes
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const HomePage()),
@@ -64,7 +63,6 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         // Show error dialog with the actual error message
         final errorMessage = result['message'] ?? 'Google sign in failed';
-        print('Google Sign-In Error: $errorMessage'); // Debug log
         _showErrorDialog(errorMessage);
       }
     }

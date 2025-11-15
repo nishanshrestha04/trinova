@@ -21,8 +21,6 @@ class GestureService {
 
     _pollTimer?.cancel();
     _pollTimer = Timer.periodic(_pollInterval, (_) => _pollGestureStatus());
-
-    print('👋 Started listening for hand gestures');
   }
 
   /// Stop polling for gesture updates
@@ -30,8 +28,6 @@ class GestureService {
     _pollTimer?.cancel();
     _pollTimer = null;
     _onGestureDetected = null;
-
-    print('🛑 Stopped listening for hand gestures');
   }
 
   /// Poll the gesture server for current status

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import '../services/pose_service.dart';
 import '../services/yoga_gesture_detector.dart';
+import '../services/user_stats_service.dart';
 
 class UnifiedPoseTrackerPage extends StatefulWidget {
   const UnifiedPoseTrackerPage({super.key});
@@ -12,12 +13,19 @@ class UnifiedPoseTrackerPage extends StatefulWidget {
 }
 
 class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
-  // Unified color theme
-  static const Color primaryColor = Color(0xFF6366F1); // Indigo
-  static const Color secondaryColor = Color(0xFF8B5CF6); // Purple
-  static const Color accentColor = Color(0xFF10B981); // Green
-  static const Color errorColor = Color(0xFFEF4444); // Red
-  static const Color warningColor = Color(0xFFF59E0B); // Amber
+  // Carbon Design System color palette
+  static const Color primaryColor = Color(0xFF0F62FE); // IBM Blue 60
+  static const Color secondaryColor = Color(0xFF393939); // Gray 80
+  static const Color accentColor = Color(0xFF198038); // Green 60
+  static const Color errorColor = Color(0xFFDA1E28); // Red 60
+  static const Color warningColor = Color(0xFFF1C21B); // Yellow
+  static const Color backgroundColor = Color(
+    0xFF161616,
+  ); // Gray 100 (Carbon dark theme)
+  static const Color surfaceColor = Color(0xFF262626); // Gray 90
+  static const Color textPrimary = Color(0xFFFFFFFF); // White
+  static const Color textSecondary = Color(0xFFC6C6C6); // Gray 30
+  static const Color borderColor = Color(0xFF393939); // Gray 80
 
   CameraController? _cameraController;
   bool _isLoading = true;
@@ -40,44 +48,84 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
   int _currentRestDuration = 30; // Dynamic rest duration (starts at 30s)
   static const int restDuration = 30; // Default 30 seconds rest
 
-  // Available poses with recommended durations
-  final List<Map<String, dynamic>> _availablePoses = [
+  // Available poses with recommended durations and difficulty
+  final List<Map<String, dynamic>> _allPoses = [
     {
       'id': 'tree',
       'name': 'Tree Pose',
       'sanskrit': 'Vrikshasana',
       'icon': Icons.park,
-      'duration': 60, // 60 seconds recommended
+      'duration': 60,
+      'difficulty': 'Beginner',
     },
     {
       'id': 'cobra',
       'name': 'Cobra Pose',
       'sanskrit': 'Bhujangasana',
       'icon': Icons.pets,
-      'duration': 45, // 45 seconds recommended
+      'duration': 45,
+      'difficulty': 'Beginner',
+    },
+    {
+      'id': 'chair',
+      'name': 'Chair Pose',
+      'sanskrit': 'Utkatasana',
+      'icon': Icons.event_seat,
+      'duration': 45,
+      'difficulty': 'Beginner',
+    },
+    {
+      'id': 'downwarddog',
+      'name': 'Downward Dog',
+      'sanskrit': 'Adho Mukha Svanasana',
+      'icon': Icons.pets,
+      'duration': 60,
+      'difficulty': 'Beginner',
     },
     {
       'id': 'warrior1',
       'name': 'Warrior I',
       'sanskrit': 'Virabhadrasana I',
       'icon': Icons.fitness_center,
-      'duration': 60, // 60 seconds recommended
+      'duration': 60,
+      'difficulty': 'Intermediate',
     },
     {
       'id': 'warrior',
       'name': 'Warrior II',
       'sanskrit': 'Virabhadrasana II',
       'icon': Icons.fitness_center,
-      'duration': 60, // 60 seconds recommended
+      'duration': 60,
+      'difficulty': 'Intermediate',
+    },
+    {
+      'id': 'triangle',
+      'name': 'Triangle Pose',
+      'sanskrit': 'Trikonasana',
+      'icon': Icons.change_history,
+      'duration': 60,
+      'difficulty': 'Intermediate',
     },
     {
       'id': 'warrior3',
       'name': 'Warrior III',
       'sanskrit': 'Virabhadrasana III',
       'icon': Icons.fitness_center,
-      'duration': 60, // 60 seconds recommended
+      'duration': 60,
+      'difficulty': 'Advanced',
     },
   ];
+
+  // Difficulty filter
+  String _selectedDifficulty = 'All';
+  List<Map<String, dynamic>> get _availablePoses {
+    if (_selectedDifficulty == 'All') {
+      return _allPoses;
+    }
+    return _allPoses
+        .where((pose) => pose['difficulty'] == _selectedDifficulty)
+        .toList();
+  }
 
   int _currentPoseIndex = 0;
   String? _selectedPoseId;
@@ -90,6 +138,11 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
   // Yoga gesture control via server
   final YogaGestureDetector _gestureDetector = YogaGestureDetector();
   StreamSubscription? _gestureSubscription;
+
+  // Session tracking
+  final UserStatsService _statsService = UserStatsService();
+  DateTime? _sessionStartTime;
+  final List<String> _completedPoses = [];
 
   @override
   void initState() {
@@ -146,21 +199,14 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
 
   void _startGestureDetection() async {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      print('⚠️ Camera not ready for gesture detection');
       return;
     }
 
     // Check if gesture backend is available
     final isAvailable = await _gestureDetector.isServerAvailable();
     if (!isAvailable) {
-      print('⚠️ Yoga gesture backend not available');
-      print('💡 Make sure backend is running: ./start_backend.sh');
-      print('💡 Backend URL: ${_gestureDetector.serverUrl}');
       return;
     }
-
-    print('✅ Yoga gesture backend connected at ${_gestureDetector.serverUrl}!');
-    print('📸 Sending camera frames to backend for gesture detection...');
 
     // Listen to gesture stream (now sending camera frames)
     _gestureSubscription = _gestureDetector
@@ -172,16 +218,12 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
             }
           },
           onError: (error) {
-            print('Gesture detection error: $error');
+            // Silent error handling
           },
         );
   }
 
   void _handleGesture(String gesture) {
-    print(
-      '🎮 Handling gesture: $gesture (isLiveTracking: $_isLiveTracking, isPaused: $_isPaused)',
-    );
-
     if (gesture == 'start' &&
         (!_isLiveTracking || _isPaused) &&
         _selectedPoseId != null) {
@@ -241,11 +283,91 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
     );
   }
 
+  void _changeDifficulty(String difficulty) {
+    // Stop tracking if currently active
+    if (_isLiveTracking) {
+      _stopLiveTracking();
+    }
+
+    setState(() {
+      _selectedDifficulty = difficulty;
+      _currentPoseIndex = 0;
+      _poseSeconds = 0;
+    });
+
+    // Select first pose from new difficulty
+    if (_availablePoses.isNotEmpty) {
+      _selectPose(_availablePoses[0]);
+    }
+
+    // Show compact notification
+    final Color difficultyColor = difficulty == 'Beginner'
+        ? Colors.green
+        : difficulty == 'Intermediate'
+        ? Colors.orange
+        : difficulty == 'Advanced'
+        ? Colors.red
+        : primaryColor;
+
+    final IconData difficultyIcon = difficulty == 'Beginner'
+        ? Icons.child_care
+        : difficulty == 'Intermediate'
+        ? Icons.trending_up
+        : difficulty == 'Advanced'
+        ? Icons.flash_on
+        : Icons.select_all;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(difficultyIcon, color: Colors.white, size: 18),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$difficulty Poses',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${_availablePoses.length} pose${_availablePoses.length != 1 ? 's' : ''} available',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 2),
+        backgroundColor: difficultyColor.withOpacity(0.9),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(top: 80, left: 20, right: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
   void _startLiveTracking() {
     if (_selectedPoseId == null) return;
 
     // If already tracking, don't restart timers
     if (_isLiveTracking && !_isPaused) return;
+
+    // Start session timer if this is the first pose
+    if (_sessionStartTime == null) {
+      _sessionStartTime = DateTime.now();
+    }
 
     setState(() {
       _isLiveTracking = true;
@@ -449,9 +571,7 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
         });
       }
     } catch (e) {
-      if (mounted) {
-        print('Live analysis error: $e');
-      }
+      // Silent error handling
     } finally {
       if (mounted) {
         setState(() {
@@ -461,8 +581,38 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
     }
   }
 
-  void _selectPose(Map<String, dynamic> pose) {
+  void _selectPose(Map<String, dynamic> pose) async {
     final poseIndex = _availablePoses.indexWhere((p) => p['id'] == pose['id']);
+
+    // Don't auto-start if this is initial selection
+    if (_isLiveTracking) {
+      // Track completed pose before moving to next
+      if (_selectedPoseId != null &&
+          !_completedPoses.contains(_selectedPoseId)) {
+        _completedPoses.add(_selectedPoseId!);
+
+        // Save duration and name of the PREVIOUS pose (the one just completed)
+        // Round up to at least 1 minute if any time was spent (handles poses < 60 seconds)
+        final completedPoseDuration = _poseSeconds > 0
+            ? ((_poseSeconds + 59) ~/ 60) // Round up: (seconds + 59) / 60
+            : 0;
+        final completedPoseName = _selectedPose?['name']; // Previous pose name
+
+        // Update daily streak with completed pose details
+        if (completedPoseName != null && completedPoseDuration > 0) {
+          try {
+            await _statsService.updateDailyStreak(
+              poseName: completedPoseName,
+              durationMinutes: completedPoseDuration,
+            );
+          } catch (e) {
+            // Silent error handling
+          }
+        }
+      }
+      // If currently tracking, start rest period before new pose
+      _startRestPeriod();
+    }
 
     setState(() {
       _currentPoseIndex = poseIndex;
@@ -471,12 +621,6 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
       _analysisResult = null;
       _poseSeconds = 0; // Reset timer when changing pose
     });
-
-    // Don't auto-start if this is initial selection
-    if (_isLiveTracking) {
-      // If currently tracking, start rest period before new pose
-      _startRestPeriod();
-    }
   }
 
   void _goToNextPose() {
@@ -514,24 +658,43 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
     }
   }
 
-  void _completeAllPoses() {
+  void _completeAllPoses() async {
     _stopLiveTracking();
+
+    // Track the last completed pose
+    if (_selectedPoseId != null && !_completedPoses.contains(_selectedPoseId)) {
+      _completedPoses.add(_selectedPoseId!);
+    }
+
+    // Calculate session duration in minutes
+    int sessionDuration = 0;
+    if (_sessionStartTime != null) {
+      final duration = DateTime.now().difference(_sessionStartTime!);
+      sessionDuration = duration.inMinutes;
+    }
+
+    // Save session stats ONLY when ALL poses are completed
+    try {
+      await _statsService.recordSession(
+        durationMinutes: sessionDuration,
+        posesCompleted: _completedPoses,
+      );
+    } catch (e) {
+      // Silent error handling
+    }
 
     // Show beautiful completion dialog
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
         child: Container(
           padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [primaryColor, secondaryColor],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
+            color: primaryColor,
+            borderRadius: BorderRadius.circular(0),
+            border: Border.all(color: primaryColor, width: 1),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -539,7 +702,7 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -586,17 +749,21 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
                   backgroundColor: Colors.white,
                   foregroundColor: primaryColor,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
+                    horizontal: 16,
+                    vertical: 11,
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
                   ),
                   elevation: 0,
                 ),
                 child: const Text(
                   'Back to Poses',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 0.16,
+                  ),
                 ),
               ),
             ],
@@ -621,13 +788,99 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(
-          _selectedPose != null ? _selectedPose!['name'] : 'Yoga Pose Tracker',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _selectedPose != null
+                  ? _selectedPose!['name']
+                  : 'Yoga Pose Tracker',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            if (_selectedPose != null && _selectedPose!['difficulty'] != null)
+              Text(
+                '${_selectedPose!['difficulty']} • ${_currentPoseIndex + 1}/${_availablePoses.length}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+          ],
         ),
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         actions: [
+          // Difficulty filter dropdown
+          PopupMenuButton<String>(
+            icon: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.filter_list, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    _selectedDifficulty,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            onSelected: (String difficulty) {
+              _changeDifficulty(difficulty);
+            },
+            itemBuilder: (BuildContext context) {
+              return <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'All',
+                  child: Row(
+                    children: [
+                      Icon(Icons.select_all, size: 18),
+                      SizedBox(width: 8),
+                      Text('All Poses'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Beginner',
+                  child: Row(
+                    children: [
+                      Icon(Icons.child_care, size: 18, color: Colors.green),
+                      SizedBox(width: 8),
+                      Text('Beginner'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Intermediate',
+                  child: Row(
+                    children: [
+                      Icon(Icons.trending_up, size: 18, color: Colors.orange),
+                      SizedBox(width: 8),
+                      Text('Intermediate'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Advanced',
+                  child: Row(
+                    children: [
+                      Icon(Icons.flash_on, size: 18, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text('Advanced'),
+                    ],
+                  ),
+                ),
+              ];
+            },
+          ),
           if (_cameraController != null &&
               _cameraController!.value.isInitialized)
             IconButton(
@@ -673,17 +926,7 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
                 // Semi-transparent overlay for better text visibility
                 Container(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.6),
-                        Colors.transparent,
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.6),
-                      ],
-                      stops: const [0.0, 0.2, 0.8, 1.0],
-                    ),
+                    color: Colors.black.withOpacity(0.3),
                   ),
                 ),
 
@@ -773,9 +1016,15 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
 
                         const Spacer(),
 
-                        // Bottom controls - Next pose button and score
-                        if (_isLiveTracking && !_isResting && !_isPaused)
+                        // Bottom controls - Next pose button, score, or Back to Home
+                        if (_isLiveTracking && !_isResting)
                           _buildBottomControls(),
+
+                        // Show "Back to Home" when stopped on last pose
+                        if (!_isLiveTracking &&
+                            !_isResting &&
+                            _currentPoseIndex == _availablePoses.length - 1)
+                          _buildBackToHomeButton(),
 
                         if (_isResting) _buildRestControls(),
                       ],
@@ -792,33 +1041,27 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
     if (_isLiveTracking && !_isPaused) {
       return Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [warningColor, Colors.orange.shade700],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: warningColor.withOpacity(0.4),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: warningColor,
+          borderRadius: BorderRadius.circular(0), // Carbon uses sharp corners
+          border: Border.all(color: warningColor, width: 1),
         ),
         child: TextButton.icon(
           onPressed: _pauseLiveTracking,
-          icon: const Icon(Icons.pause, size: 18, color: Colors.white),
+          icon: const Icon(Icons.pause, size: 16, color: Color(0xFF161616)),
           label: const Text(
             'Pause',
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF161616),
+              letterSpacing: 0.16,
             ),
           ),
           style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
           ),
         ),
       );
@@ -828,33 +1071,27 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
     if (_isPaused) {
       return Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [accentColor, Colors.green.shade700],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: accentColor.withOpacity(0.4),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: accentColor,
+          borderRadius: BorderRadius.circular(0),
+          border: Border.all(color: accentColor, width: 1),
         ),
         child: TextButton.icon(
           onPressed: _resumeLiveTracking,
-          icon: const Icon(Icons.play_arrow, size: 18, color: Colors.white),
+          icon: const Icon(Icons.play_arrow, size: 16, color: Colors.white),
           label: const Text(
             'Resume',
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w400,
               color: Colors.white,
+              letterSpacing: 0.16,
             ),
           ),
           style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
           ),
         ),
       );
@@ -863,33 +1100,25 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
     // Show start button when not tracking
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [primaryColor, secondaryColor],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: primaryColor.withOpacity(0.4),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: primaryColor,
+        borderRadius: BorderRadius.circular(0),
+        border: Border.all(color: primaryColor, width: 1),
       ),
       child: TextButton.icon(
         onPressed: _startLiveTracking,
-        icon: const Icon(Icons.play_arrow, size: 18, color: Colors.white),
+        icon: const Icon(Icons.play_arrow, size: 16, color: Colors.white),
         label: const Text(
           'Start Tracking',
           style: TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w400,
             color: Colors.white,
+            letterSpacing: 0.16,
           ),
         ),
         style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         ),
       ),
     );
@@ -996,6 +1225,7 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
   Widget _buildBottomControls() {
     final score = _analysisResult?['score'] ?? 0.0;
     final hasNextPose = _currentPoseIndex < _availablePoses.length - 1;
+    final isLastPose = _currentPoseIndex == _availablePoses.length - 1;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1024,39 +1254,70 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
             ],
           ),
 
-        // Next pose button
-        if (hasNextPose)
+        // Show "Back to Home" button if on last pose and paused
+        if (isLastPose && _isPaused)
           Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [secondaryColor, primaryColor],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: secondaryColor.withOpacity(0.4),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              color: accentColor,
+              borderRadius: BorderRadius.circular(0),
+              border: Border.all(color: accentColor, width: 1),
             ),
             child: TextButton.icon(
-              onPressed: _goToNextPose,
-              icon: const Icon(Icons.arrow_forward, size: 16),
-              label: Text(
-                'Next: ${_availablePoses[_currentPoseIndex + 1]['name']}',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(Icons.home, size: 16, color: Colors.white),
+              label: const Text(
+                'Back to Home',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white,
+                  letterSpacing: 0.16,
                 ),
               ),
               style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+                  horizontal: 16,
+                  vertical: 11,
+                ),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                ),
+              ),
+            ),
+          )
+        // Next pose button (only show if not on last pose)
+        else if (hasNextPose)
+          Container(
+            decoration: BoxDecoration(
+              color: secondaryColor,
+              borderRadius: BorderRadius.circular(0),
+              border: Border.all(color: borderColor, width: 1),
+            ),
+            child: TextButton.icon(
+              onPressed: _goToNextPose,
+              icon: const Icon(
+                Icons.arrow_forward,
+                size: 16,
+                color: Colors.white,
+              ),
+              label: Text(
+                'Next: ${_availablePoses[_currentPoseIndex + 1]['name']}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white,
+                  letterSpacing: 0.16,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 11,
+                ),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
                 ),
               ),
             ),
@@ -1065,74 +1326,142 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
     );
   }
 
+  Widget _buildBackToHomeButton() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        decoration: BoxDecoration(
+          color: accentColor,
+          borderRadius: BorderRadius.circular(0),
+          border: Border.all(color: accentColor, width: 1),
+        ),
+        child: TextButton.icon(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          icon: const Icon(Icons.home, size: 16, color: Colors.white),
+          label: const Text(
+            'Back to Home',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Colors.white,
+              letterSpacing: 0.16,
+            ),
+          ),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRestControls() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Extend rest button
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [warningColor, primaryColor],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        Expanded(
+          child: Container(
+            margin: const EdgeInsets.only(right: 6),
+            decoration: BoxDecoration(
+              color: secondaryColor,
+              borderRadius: BorderRadius.circular(0),
+              border: Border.all(color: borderColor, width: 1),
             ),
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: warningColor.withOpacity(0.4),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+            child: TextButton.icon(
+              onPressed: _extendRestPeriod,
+              icon: const Icon(Icons.add, size: 16, color: Colors.white),
+              label: const Text(
+                '+5s',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white,
+                  letterSpacing: 0.16,
+                ),
               ),
-            ],
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 11,
+                ),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                ),
+              ),
+            ),
           ),
-          child: TextButton.icon(
-            onPressed: _extendRestPeriod,
-            icon: const Icon(Icons.add, size: 16, color: Colors.white),
-            label: const Text(
-              '+5s',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+        ),
+
+        // Reset pose button
+        Expanded(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 6),
+            decoration: BoxDecoration(
+              color: warningColor,
+              borderRadius: BorderRadius.circular(0),
+              border: Border.all(color: warningColor, width: 1),
             ),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: TextButton.icon(
+              onPressed: _resetCurrentPose,
+              icon: const Icon(Icons.refresh, size: 16, color: Colors.black),
+              label: const Text(
+                'Reset',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black,
+                  letterSpacing: 0.16,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 11,
+                ),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                ),
+              ),
             ),
           ),
         ),
 
         // Skip rest button
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [accentColor, primaryColor],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        Expanded(
+          child: Container(
+            margin: const EdgeInsets.only(left: 6),
+            decoration: BoxDecoration(
+              color: primaryColor,
+              borderRadius: BorderRadius.circular(0),
+              border: Border.all(color: primaryColor, width: 1),
             ),
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: accentColor.withOpacity(0.4),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+            child: TextButton.icon(
+              onPressed: _skipRestPeriod,
+              icon: const Icon(Icons.skip_next, size: 16, color: Colors.white),
+              label: const Text(
+                'Skip',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white,
+                  letterSpacing: 0.16,
+                ),
               ),
-            ],
-          ),
-          child: TextButton.icon(
-            onPressed: _skipRestPeriod,
-            icon: const Icon(Icons.skip_next, size: 16, color: Colors.white),
-            label: const Text(
-              'Skip Rest',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 11,
+                ),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                ),
               ),
-            ),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             ),
           ),
         ),
@@ -1144,6 +1473,52 @@ class _UnifiedPoseTrackerPageState extends State<UnifiedPoseTrackerPage> {
     setState(() {
       _restSeconds += 5; // Add 5 more seconds
       _currentRestDuration += 5; // Extend total duration for progress bar
+    });
+  }
+
+  void _resetCurrentPose() {
+    // Cancel rest timer
+    _restTimer?.cancel();
+    _restTimer = null;
+
+    // Stop any active tracking
+    _stopLiveTracking();
+
+    setState(() {
+      _isResting = false;
+      _restSeconds = 0;
+      _poseSeconds = 0;
+      _isPaused = false;
+      _analysisResult = null;
+      // Keep the same pose index - just reset the timer
+    });
+
+    // Show feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.refresh, color: Colors.white, size: 16),
+            SizedBox(width: 8),
+            Text(
+              'Pose reset - Get ready!',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 2),
+        backgroundColor: accentColor,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(bottom: 100, left: 20, right: 20),
+      ),
+    );
+
+    // Wait a moment then restart tracking for the same pose
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        _startLiveTracking();
+      }
     });
   }
 }

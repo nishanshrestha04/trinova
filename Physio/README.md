@@ -6,6 +6,9 @@ Poses supported:
 - Warrior I (Virabhadrasana I)
 - Warrior II (Virabhadrasana II)
 - Warrior III (Virabhadrasana III)
+- Triangle (Trikonasana)
+- Chair (Utkatasana)
+- Downward Dog (Adho Mukha Svanasana)
 
 ## Install
 python -m venv .venv
@@ -20,6 +23,9 @@ python main.py --pose cobra
 python main.py --pose warrior1
 python main.py --pose warrior
 python main.py --pose warrior3
+python main.py --pose triangle
+python main.py --pose chair
+python main.py --pose downwarddog
 
 # Optional camera index (default 0):
 python main.py --pose warrior --camera 0

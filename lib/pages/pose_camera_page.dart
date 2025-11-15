@@ -98,21 +98,14 @@ class _PoseCameraPageState extends State<PoseCameraPage> {
 
   void _startGestureDetection() async {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      print('⚠️ Camera not ready for gesture detection');
       return;
     }
 
     // Check if gesture backend is available
     final isAvailable = await _gestureDetector.isServerAvailable();
     if (!isAvailable) {
-      print('⚠️ Yoga gesture backend not available');
-      print('💡 Make sure backend is running: ./start_backend.sh');
-      print('💡 Backend URL: ${_gestureDetector.serverUrl}');
       return;
     }
-
-    print('✅ Yoga gesture backend connected at ${_gestureDetector.serverUrl}!');
-    print('📸 Sending camera frames to backend for gesture detection...');
 
     // Listen to gesture stream (now sending camera frames)
     _gestureSubscription = _gestureDetector
@@ -132,14 +125,12 @@ class _PoseCameraPageState extends State<PoseCameraPage> {
             }
           },
           onError: (error) {
-            print('Gesture detection error: $error');
+            // Silent error handling
           },
         );
   }
 
   void _handleGesture(String gesture) {
-    print('🎮 Handling gesture: $gesture (isLiveTracking: $_isLiveTracking)');
-
     if (gesture == 'start' && !_isLiveTracking) {
       _startLiveTracking();
       _showGestureFeedback('TRACKING STARTED by gesture');
@@ -276,9 +267,7 @@ class _PoseCameraPageState extends State<PoseCameraPage> {
         });
       }
     } catch (e) {
-      if (mounted) {
-        print('Live analysis error: $e');
-      }
+      // Silent error handling
     } finally {
       if (mounted) {
         setState(() {

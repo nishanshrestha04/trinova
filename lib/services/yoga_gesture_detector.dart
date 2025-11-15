@@ -18,12 +18,12 @@ class YogaGestureDetector {
 
   /// Get default URL based on platform
   /// For Android emulator: http://10.0.2.2:8000
-  /// For real device: http://192.168.1.109:8000 (your computer's local IP)
+  /// For real device: http://192.168.18.6:8000 (your computer's local IP)
   /// You can override by passing custom URL
   static String _getDefaultUrl() {
     // For real Android device, use your computer's local IP
     // Change this to your computer's IP address
-    return 'http://192.168.1.109:8000';
+    return 'http://192.168.18.6:8000';
 
     // For Android emulator, uncomment this:
     // return 'http://10.0.2.2:8000';
@@ -36,7 +36,6 @@ class YogaGestureDetector {
   ) async* {
     _cameraController = cameraController;
     _isRunning = true;
-    print('🎬 Starting yoga gesture detection - sending frames to backend');
 
     while (_isRunning && _cameraController != null) {
       try {
@@ -48,7 +47,6 @@ class YogaGestureDetector {
           const Duration(seconds: 2),
         ); // Check every 2 seconds
       } catch (e) {
-        print('⚠️ Gesture detection error: $e');
         await Future.delayed(const Duration(seconds: 2));
       }
     }
@@ -83,10 +81,7 @@ class YogaGestureDetector {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final gesture = data['gesture'] as String?;
         final action = data['action'] as String?;
-
-        print('📡 Backend gesture: $gesture, action: $action');
 
         if (action != null && action != 'none') {
           _lastGestureTime = DateTime.now();
@@ -94,13 +89,10 @@ class YogaGestureDetector {
           // Map actions to our START/STOP commands
           switch (action) {
             case 'resume': // Thumbs up
-              print('🎯 YOGA GESTURE: START (Thumbs Up 👍)');
               return 'start';
             case 'pause': // Open palm
-              print('🎯 YOGA GESTURE: STOP (Open Palm ✋)');
               return 'stop';
             case 'next': // Point
-              print('🎯 YOGA GESTURE: NEXT (Point 👉)');
               return 'next';
             default:
               return null;
@@ -108,7 +100,6 @@ class YogaGestureDetector {
         }
       }
     } catch (e) {
-      print('❌ Error detecting gesture: $e');
       return null;
     }
 
@@ -131,6 +122,5 @@ class YogaGestureDetector {
   void dispose() {
     _isRunning = false;
     _cameraController = null;
-    print('🛑 Stopped yoga gesture detection');
   }
 }

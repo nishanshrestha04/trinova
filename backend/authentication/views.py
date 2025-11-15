@@ -172,6 +172,36 @@ def logout(request):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def refresh_token(request):
+    """
+    Refresh access token using refresh token
+    """
+    try:
+        refresh_token_str = request.data.get('refresh')
+        
+        if not refresh_token_str:
+            return Response({
+                'error': 'Refresh token is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create RefreshToken object from string
+        refresh = RefreshToken(refresh_token_str)
+        
+        # Generate new access token
+        access_token = str(refresh.access_token)
+
+        return Response({
+            'access': access_token,
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({
+            'error': 'Invalid or expired refresh token'
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+
 @api_view(['GET'])
 def profile(request):
     """

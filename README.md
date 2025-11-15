@@ -64,7 +64,7 @@
 
 | Feature | Description |
 |---------|-------------|
-| **5 Yoga Poses** | Tree, Cobra, Warrior I, Warrior II, Warrior III |
+| **8 Yoga Poses** | Tree, Cobra, Warrior I, Warrior II, Warrior III, Triangle, Chair, Downward Dog |
 | **Live Pose Detection** | Real-time camera feed analysis with skeletal overlay |
 | **Image Analysis** | Upload photos from gallery for pose evaluation |
 | **Accuracy Scoring** | 0-100% score based on joint angles and body alignment |
@@ -441,7 +441,7 @@ flutter run
 ┌──────────────────┐          HTTP/REST           ┌─────────────────┐
 │                  │◄─────────────────────────────┤                 │
 │  Flutter App     │         JSON/Base64          │  Django Backend │
-│  (Frontend)      ├──────────────────────────────►  (API Server)   │
+│  (Frontend)      ├─────────────────────────────►│  (API Server)   │
 │                  │                              │                 │
 └────────┬─────────┘                              └────────┬────────┘
          │                                                 │
@@ -457,12 +457,15 @@ flutter run
 └──────────────────┘                              └────────┬─────────┘
                                                            │
                                                            ▼
-                                                  ┌──────────────────┐
-                                                  │ Pose Evaluators  │
-                                                  │ - Tree           │
-                                                  │ - Cobra          │
+                                                  ┌───────────────────┐
+                                                  │ Pose Evaluators   │
+                                                  │ - Tree            │
+                                                  │ - Cobra           │
                                                   │ - Warrior I/II/III│
-                                                  └──────────────────┘
+                                                  │ - Triangle        │
+                                                  │ - Chair           │
+                                                  │ - Downward Dog    │
+                                                  └───────────────────┘
 ```
 
 ### Project Structure
@@ -515,7 +518,10 @@ trinova/
 │       │   ├── cobra.py          # Cobra pose evaluator
 │       │   ├── warrior1.py       # Warrior I evaluator
 │       │   ├── warrior2.py       # Warrior II evaluator
-│       │   └── warrior3.py       # Warrior III evaluator
+│       │   ├── warrior3.py       # Warrior III evaluator
+│       │   ├── triangle.py       # Triangle pose evaluator
+│       │   ├── chair.py          # Chair pose evaluator
+│       │   └── downward_dog.py   # Downward Dog evaluator
 │       ├── pose_runner.py        # Webcam pose detection runner
 │       └── utils/
 │           └── angle_calculator.py  # Joint angle calculations
@@ -1403,6 +1409,101 @@ knee_angle = calculate_angle(
 - Strengthens core and legs
 - Tones entire back body
 - Enhances focus and concentration
+
+---
+
+### 6. Triangle Pose (Trikonasana)
+
+| Property | Value |
+|----------|-------|
+| **Difficulty** | Intermediate |
+| **Duration** | 2-3 minutes |
+| **Target** | Legs, Hips, Balance |
+
+**How to Perform:**
+1. Stand with feet wide apart
+2. Turn right foot out 90 degrees
+3. Keep both legs straight
+4. Reach right hand down to ankle/shin
+5. Extend left arm straight up
+6. Turn torso to face the side
+7. Hold 20-30 seconds per side
+
+**Evaluation Criteria:**
+- Both legs straight
+- Wide stance (feet > 1.6x hip width)
+- Torso nearly horizontal (sideways)
+- Arms forming vertical line
+- Hand near foot
+
+**Benefits:**
+- Stretches legs and hips deeply
+- Opens chest and shoulders
+- Improves balance and stability
+- Strengthens core muscles
+
+---
+
+### 7. Chair Pose (Utkatasana)
+
+| Property | Value |
+|----------|-------|
+| **Difficulty** | Beginner |
+| **Duration** | 2-3 minutes |
+| **Target** | Legs, Core |
+
+**How to Perform:**
+1. Stand with feet hip-width apart
+2. Bend knees as if sitting in a chair
+3. Lower hips until thighs nearly parallel to floor
+4. Raise arms overhead
+5. Keep weight in heels
+6. Engage core, back straight
+7. Hold 15-30 seconds
+
+**Evaluation Criteria:**
+- Knees clearly bent (100-170°)
+- Torso can lean forward slightly
+- Arms overhead
+- Weight in heels, not toes
+
+**Benefits:**
+- Strengthens thighs and glutes
+- Tones core muscles
+- Improves posture
+- Builds heat and energy
+
+---
+
+### 8. Downward Dog (Adho Mukha Svanasana)
+
+| Property | Value |
+|----------|-------|
+| **Difficulty** | Beginner |
+| **Duration** | 2-3 minutes |
+| **Target** | Full Body Stretch |
+
+**How to Perform:**
+1. Start on hands and knees
+2. Tuck toes, lift hips up and back
+3. Straighten arms and legs
+4. Press heels toward floor
+5. Form inverted V-shape
+6. Head between arms, looking at feet
+7. Hold 30-60 seconds
+
+**Evaluation Criteria:**
+- Arms nearly straight (elbows > 150°)
+- Legs nearly straight (knees > 150°)
+- Hips highest point (triangle peak)
+- Hands and feet roughly same height
+- Clear inverted V shape
+
+**Benefits:**
+- Stretches hamstrings and calves
+- Strengthens arms and shoulders
+- Energizes the entire body
+- Relieves back tension
 
 ---
 

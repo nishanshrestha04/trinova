@@ -78,8 +78,6 @@ class PhoneGestureDetector {
       // Detect poses
       final poses = await _poseDetector.processImage(inputImage);
 
-      print('📸 Poses detected: ${poses.length}');
-
       if (poses.isEmpty) {
         _isProcessing = false;
         return null;
@@ -98,7 +96,6 @@ class PhoneGestureDetector {
       _isProcessing = false;
       return gesture;
     } catch (e) {
-      print('❌ Pose detection error: $e');
       _isProcessing = false;
       return null;
     }
@@ -122,11 +119,10 @@ class PhoneGestureDetector {
         rightElbow == null ||
         leftShoulder == null ||
         rightShoulder == null) {
-      print('⚠️ Missing landmarks - cannot detect gesture');
       return null;
     }
 
-    // Debug: Print landmark positions (in image coordinates, higher Y = lower on screen)
+    // Calculate hand positions relative to shoulders
     final leftDiff =
         leftShoulder.y -
         leftWrist.y; // POSITIVE = wrist is ABOVE shoulder (hand UP)
@@ -134,24 +130,12 @@ class PhoneGestureDetector {
         rightShoulder.y -
         rightWrist.y; // POSITIVE = wrist is ABOVE shoulder (hand UP)
 
-    print(
-      '📍 Left hand diff: ${leftDiff.toStringAsFixed(1)} (wrist: ${leftWrist.y.toStringAsFixed(0)}, shoulder: ${leftShoulder.y.toStringAsFixed(0)})',
-    );
-    print(
-      '📍 Right hand diff: ${rightDiff.toStringAsFixed(1)} (wrist: ${rightWrist.y.toStringAsFixed(0)}, shoulder: ${rightShoulder.y.toStringAsFixed(0)})',
-    );
-
     // SIMPLE GESTURE: Just raise ANY hand significantly above shoulder
     // POSITIVE diff = Hand is raised UP (wrist Y < shoulder Y)
     final leftHandUp = leftDiff > 100; // Hand needs to be 100px above shoulder
     final rightHandUp = rightDiff > 100;
 
-    print(
-      '✋ Left hand UP (diff > 100): $leftHandUp, Right hand UP (diff > 100): $rightHandUp',
-    );
-
     if (leftHandUp || rightHandUp) {
-      print('🎯 GESTURE DETECTED: START (Hand raised high!)');
       return 'start'; // 👍 Hand raised = START
     }
 
@@ -166,7 +150,6 @@ class PhoneGestureDetector {
         _getDistance(leftShoulder, rightShoulder) * 1.3; // More lenient
 
     if (bothHandsAtShoulderLevel && handsExtended) {
-      print('🎯 GESTURE DETECTED: STOP (T-pose)');
       return 'stop'; // ✋ Open palm (T-pose) = STOP
     }
 
